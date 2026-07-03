@@ -459,8 +459,17 @@ def main():
 
     # ── Rebuild failures section ─────────────────────────────────────────────
 
-    rebuild_section = build_rebuild_section(data.get("rebuild_failed_tests"))
-    timing_section = build_timing_section(data.get("test_timings"), data.get("test_timings_previous"))
+    try:
+        rebuild_section = build_rebuild_section(data.get("rebuild_failed_tests"))
+    except Exception as e:
+        print(f"WARNING: build_rebuild_section failed, omitting section: {e}", file=sys.stderr)
+        rebuild_section = ""
+
+    try:
+        timing_section = build_timing_section(data.get("test_timings"), data.get("test_timings_previous"))
+    except Exception as e:
+        print(f"WARNING: build_timing_section failed, omitting section: {e}", file=sys.stderr)
+        timing_section = ""
 
     # ── Footer ───────────────────────────────────────────────────────────────
 

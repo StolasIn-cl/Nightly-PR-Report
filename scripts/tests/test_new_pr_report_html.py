@@ -1,6 +1,9 @@
 import importlib.util
+import json
 import os
+import subprocess
 import sys
+import tempfile
 import unittest
 
 SCRIPTS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -94,6 +97,60 @@ class TimingSectionTests(unittest.TestCase):
             current["test_timings"][key] = 10.0 + 25.0 + i
         html = rpt.build_timing_section(current, previous)
         self.assertIn("+5 more", html)  # 35 rows, cap 30 -> 5 more
+
+
+class MalformedTimingDataDoesNotCrashReportTests(unittest.TestCase):
+    """End-to-end guard for the final-review finding: a non-numeric value in
+    the upstream test-timings data must not crash the whole nightly report
+    (PR table, coverage, etc.) -- only the timing section should be omitted.
+    """
+
+    def test_non_numeric_test_timing_does_not_crash_main(self):
+        data = {
+            "date": "2026-07-03",
+            "generated_at": "2026-07-03T00:00:00Z",
+            "prs": [],
+            "pr_count": 0,
+            "test_timings": {
+                "metadata": {"rebuild_wall_seconds": 10720},
+                "test_timings": {
+                    # Malformed: a string instead of a number. This makes
+                    # `curr - prev` inside _timing_rows raise TypeError.
+                    "test/a_test.dart": "not-a-number",
+                },
+            },
+            "test_timings_previous": {
+                "metadata": {"rebuild_wall_seconds": 10000},
+                "test_timings": {
+                    "test/a_test.dart": 100.0,
+                },
+            },
+        }
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            data_path = os.path.join(tmpdir, "nightly-report-data.json")
+            out_path = os.path.join(tmpdir, "nightly-report.html")
+            with open(data_path, "w", encoding="utf-8") as f:
+                json.dump(data, f)
+
+            script_path = os.path.join(SCRIPTS_DIR, "new_pr_report_html.py")
+            result = subprocess.run(
+                [sys.executable, script_path, "--data", data_path, "--out", out_path],
+                capture_output=True,
+                text=True,
+            )
+
+            self.assertEqual(
+                result.returncode, 0,
+                msg=f"script crashed instead of degrading gracefully.\n"
+                    f"stdout: {result.stdout}\nstderr: {result.stderr}",
+            )
+            self.assertTrue(os.path.exists(out_path), "report HTML was not produced")
+            self.assertIn("build_timing_section failed", result.stderr)
+
+            with open(out_path, encoding="utf-8") as f:
+                html_out = f.read()
+            self.assertIn("<html", html_out)
 
 
 if __name__ == "__main__":
