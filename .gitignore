@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+
+.agents/
+.claude/
+.superpowers/
+
+SKILL.local.md
+
+fetch.log
+cleanup.log
+nightly-report-data.json
+nightly-report.html
+nightly-report.pdf
+run-status.json
