@@ -460,6 +460,7 @@ def main():
     # ── Rebuild failures section ─────────────────────────────────────────────
 
     rebuild_section = build_rebuild_section(data.get("rebuild_failed_tests"))
+    timing_section = build_timing_section(data.get("test_timings"), data.get("test_timings_previous"))
 
     # ── Footer ───────────────────────────────────────────────────────────────
 
@@ -647,6 +648,8 @@ def main():
       {footer}
     </div>
   </div>
+
+  {timing_section}
 
 </div>
 </body>
