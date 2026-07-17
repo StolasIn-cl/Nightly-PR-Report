@@ -16,8 +16,8 @@ Options:
     --branch        Data branch to track (default: data/test-mapping).
     --git-name      Git commit author name for this repo (prompted if omitted).
     --git-email     Git commit author email for this repo (prompted if omitted).
-    --report-email  Recipient email for the nightly report, written into
-                    SKILL.local.md (defaults to --git-email if omitted).
+    --report-email  Semicolon-separated recipients for the nightly report,
+                    stored locally in recipients.json (defaults to --git-email if omitted).
 
 Note: commit authorship and the actual GitHub identity used to push/fetch are
 separate. This script only sets the local git identity (user.name/user.email).
@@ -27,6 +27,7 @@ set that up separately so it is not a machine-wide shared login.
 """
 
 import argparse
+import json
 import os
 import subprocess
 import sys
@@ -98,6 +99,25 @@ def render_local_skill(template_path, output_path, replacements):
     print(f"[OK] Wrote local skill file: {output_path}")
 
 
+def write_recipients_file(output_path, recipients_text):
+    """Write a local, gitignored JSON recipient list from semicolon-separated input."""
+    recipients = [item.strip() for item in recipients_text.split(";") if item.strip()]
+    if not recipients:
+        print("[ERROR] At least one report recipient is required.", file=sys.stderr)
+        sys.exit(1)
+
+    content = json.dumps({"recipients": recipients}, indent=2, ensure_ascii=False) + "\n"
+    previous = None
+    if os.path.isfile(output_path):
+        with open(output_path, encoding="utf-8") as file:
+            previous = file.read()
+    if previous == content:
+        print(f"[OK] Recipient list already up to date: {output_path}")
+        return
+
+    with open(output_path, "w", encoding="utf-8") as file:
+        file.write(content)
+    print(f"[OK] Wrote local recipient list: {output_path}")
 def main():
     parser = argparse.ArgumentParser(
         description=__doc__,
@@ -126,7 +146,7 @@ def main():
     parser.add_argument(
         "--report-email",
         default="",
-        help="Recipient email for the nightly report, written into SKILL.local.md "
+        help="Semicolon-separated recipients for the nightly report, stored in recipients.json "
         "(defaults to --git-email if omitted)",
     )
     args = parser.parse_args()
@@ -196,17 +216,19 @@ def main():
     print(f"[OK] local git identity set: {git_name} <{git_email}>")
 
     report_email = args.report_email or prompt_default(
-        "Report recipient email (used in SKILL.local.md)",
+        "Report recipient email(s), separated by semicolons",
         git_email,
     )
     skill_template_path = os.path.join(repo_dir, "SKILL.md")
     local_skill_path = os.path.join(repo_dir, "SKILL.local.md")
+    recipients_path = os.path.join(repo_dir, "recipients.json")
     if report_email and os.path.isfile(skill_template_path):
+        write_recipients_file(recipients_path, report_email)
         render_local_skill(
             skill_template_path,
             local_skill_path,
             {
-                "{{REPORT_EMAIL}}": report_email,
+                "{{RECIPIENTS_PATH_WINDOWS}}": recipients_path,
                 "{{NR_DIR_WINDOWS}}": repo_dir,
                 "{{SCRIPT_SOURCE_WINDOWS}}": os.path.join(
                     repo_dir, "scripts", "new_pr_report_html.py"

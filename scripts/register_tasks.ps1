@@ -68,7 +68,7 @@ Register-ScheduledTask `
     -RunLevel    Highest `
     -Force | Out-Null
 
-Write-Host "✓ Registered NightlyPR-Fetch   @ $FetchTime"
+Write-Host "[OK] Registered NightlyPR-Fetch   @ $FetchTime"
 
 # ── NightlyPR-Cleanup ────────────────────────────────────────────────────────
 $cleanupAction  = New-ScheduledTaskAction `
@@ -86,7 +86,7 @@ Register-ScheduledTask `
     -RunLevel    Highest `
     -Force | Out-Null
 
-Write-Host "✓ Registered NightlyPR-Cleanup @ $CleanupTime"
+Write-Host "[OK] Registered NightlyPR-Cleanup @ $CleanupTime"
 
 Write-Host ""
 Write-Host "Done. Open Task Scheduler to verify, or test immediately:"

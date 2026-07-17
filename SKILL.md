@@ -1,6 +1,6 @@
 ---
 name: nightly-pr-report
-description: 每天早上 8 點從 data/test-mapping branch 收集 PR 資料，產生 PDF 報告並以附件寄給 {{REPORT_EMAIL}}
+description: 每天早上 8 點從 data/test-mapping branch 收集 PR 資料，產生 PDF 報告並以附件寄給本機 recipients.json 中的收件者
 ---
 
 You are executing the nightly PR report for the promeo project.
@@ -16,6 +16,7 @@ NR_DIR=$(ls -d /sessions/*/mnt/Nightly-PR-Report 2>/dev/null | head -1)
 export SCRIPTS=$NR_DIR/scripts
 export DATA_FILE=$NR_DIR/nightly-report-data.json
 export HTML_FILE=$NR_DIR/nightly-report.html
+export RECIPIENTS_FILE=$NR_DIR/recipients.json
 echo "NR_DIR=$NR_DIR"
 ```
 
@@ -250,7 +251,9 @@ Find the "New mail" / "新郵件" button and click it. Wait for the compose pane
 
 ### 5c. Fill in To and Subject
 
-- Click the **To / 收件者** field, type `{{REPORT_EMAIL}}`, press Tab.
+- Use the **Read tool** to read the local recipient file at `{{RECIPIENTS_PATH_WINDOWS}}`. It is a JSON object with a `recipients` array of email addresses.
+- Verify that the array is non-empty. If it is missing, invalid, or empty, stop and report the error; do not create an email.
+- Click the **To / 收件者** field, enter every address from `recipients` (semicolon-separated), then press Tab.
 - Click the **Subject / 新增主旨** field, type the subject computed above.
 
 ### 5d. Type a brief plain-text body
