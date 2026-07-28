@@ -93,14 +93,14 @@ class SetupNightlyReportTests(unittest.TestCase):
             with open(os.path.join(workspace, "SKILL.md"), encoding="utf-8") as file:
                 template_after = file.read()
             self.assertEqual(template_after, template_before, "template SKILL.md should remain unchanged")
-            self.assertIn("{{REPORT_EMAIL}}", template_after)
             self.assertIn("{{NR_DIR_WINDOWS}}", template_after)
+            self.assertIn("{{SCRIPT_SOURCE_WINDOWS}}", template_after)
 
             with open(local_skill_path, encoding="utf-8") as file:
                 local_skill_text = file.read()
-            self.assertIn(report_email, local_skill_text)
-            self.assertNotIn("{{REPORT_EMAIL}}", local_skill_text)
             self.assertIn(workspace, local_skill_text)
+            self.assertNotIn("{{NR_DIR_WINDOWS}}", local_skill_text)
+            self.assertNotIn("{{SCRIPT_SOURCE_WINDOWS}}", local_skill_text)
             self.assertIn(os.path.join(workspace, "nightly-report.pdf"), local_skill_text)
 
     def test_setup_script_runs_under_cp950_console_encoding(self):
