@@ -129,6 +129,76 @@ class CppFailureSectionTests(unittest.TestCase):
         self.assertNotIn("Author", html)
 
 
+class ReportLayoutTests(unittest.TestCase):
+    def render_report_with_full_coverage(self):
+        data = {
+            "date": "2026-07-27",
+            "generated_at": "2026-07-27T00:00:00Z",
+            "prs": [{
+                "summary": {
+                    "pr_number": 123,
+                    "run_url": "https://example.com/runs/123",
+                    "author": "report-author",
+                    "title": "Coverage layout regression fixture",
+                    "outcome": "pass",
+                    "selected_test_count": 5,
+                    "dart_diff_coverage": None,
+                    "cpp_diff_coverage": None,
+                    "total_ms": 1000,
+                },
+            }],
+            "pr_count": 1,
+            "codebase_coverage": {
+                "line_pct": 13.86,
+                "line_hit": 40318,
+                "line_total": 290815,
+            },
+            "full_coverage_summary": {
+                "complete": False,
+                "dart": {
+                    "status": "measured",
+                    "percent": 64.12,
+                    "covered_lines": 8298,
+                    "eligible_source_lines": 12942,
+                },
+                "cpp": {
+                    "status": "measured",
+                    "measurement_complete": False,
+                    "percent": 2.02,
+                    "covered_lines": 811,
+                    "eligible_source_lines": 40196,
+                },
+                "combined": {
+                    "status": "incomplete",
+                    "percent": None,
+                },
+            },
+        }
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            data_path = os.path.join(tmpdir, "nightly-report-data.json")
+            out_path = os.path.join(tmpdir, "nightly-report.html")
+            with open(data_path, "w", encoding="utf-8") as f:
+                json.dump(data, f)
+
+            script_path = os.path.join(SCRIPTS_DIR, "new_pr_report_html.py")
+            result = subprocess.run(
+                [sys.executable, script_path, "--data", data_path, "--out", out_path],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(result.returncode, 0, msg=result.stderr)
+            with open(out_path, encoding="utf-8") as f:
+                return f.read()
+
+    def test_full_report_places_coverage_before_pr_table_and_omits_header_coverage(self):
+        html = self.render_report_with_full_coverage()
+
+        self.assertLess(html.index("<!-- Native coverage -->"), html.index("Pull Requests"))
+        self.assertNotIn("Coverage <strong", html)
+        self.assertNotIn("40318/290815 lines", html)
+
+
 class MalformedTimingDataDoesNotCrashReportTests(unittest.TestCase):
     """End-to-end guard for the final-review finding: a non-numeric value in
     the upstream test-timings data must not crash the whole nightly report

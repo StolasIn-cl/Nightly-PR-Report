@@ -444,15 +444,6 @@ def main():
             f"margin-right:6px'>&#9654; {total_tests} tests selected</span>"
         )
 
-    cov_html = ""
-    if cov_pct is not None:
-        cov_bar_color = "#4caf50" if cov_pct >= 80 else ("#ff9800" if cov_pct >= 50 else "#f44336")
-        cov_html = (
-            f"<span style='color:rgba(255,255,255,.65);font-size:12px;margin-left:8px'>"
-            f"· Coverage <strong style='color:#fff'>{cov_pct}%</strong>"
-            f" ({cc.get('line_hit','?')}/{cc.get('line_total','?')} lines)</span>"
-        )
-
     # ── PR rows ──────────────────────────────────────────────────────────────
 
     TH = (
@@ -730,10 +721,11 @@ def main():
     <h1>PR Daily Report &mdash; {esc(date)}</h1>
     <div>
       {pills_html}
-      {cov_html}
     </div>
     <div class="meta">{esc(data.get('generated_at',''))}</div>
   </div>
+
+  {coverage_section}
 
   <!-- PR table -->
   <div class="section">
@@ -742,8 +734,6 @@ def main():
   </div>
 
   {rebuild_section}
-
-  {coverage_section}
 
   {cpp_failures_section}
 
