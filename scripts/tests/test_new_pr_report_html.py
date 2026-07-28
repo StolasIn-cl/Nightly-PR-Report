@@ -99,6 +99,36 @@ class TimingSectionTests(unittest.TestCase):
         self.assertIn("+5 more", html)  # 35 rows, cap 30 -> 5 more
 
 
+class CoverageSectionTests(unittest.TestCase):
+    def test_coverage_section_shows_measured_dart_and_incomplete_cpp(self):
+        html = rpt.build_coverage_section({
+            "complete": False,
+            "dart": {"status": "measured", "percent": 64.12,
+                     "covered_lines": 8298, "eligible_source_lines": 12942},
+            "cpp": {"status": "measured", "measurement_complete": False,
+                    "percent": 2.02, "covered_lines": 811,
+                    "eligible_source_lines": 40196},
+            "combined": {"status": "incomplete", "percent": None},
+        })
+        self.assertIn("Dart", html)
+        self.assertIn("64.12%", html)
+        self.assertIn("C++", html)
+        self.assertIn("incomplete", html)
+        self.assertNotIn("0%", html)
+
+
+class CppFailureSectionTests(unittest.TestCase):
+    def test_cpp_failures_show_package_and_reason_without_author(self):
+        html = rpt.build_cpp_failures_section({
+            "failed_package_count": 1,
+            "failures": [{"package_name": "ai_generator",
+                          "reason": "test executable is missing"}],
+        })
+        self.assertIn("ai_generator", html)
+        self.assertIn("test executable is missing", html)
+        self.assertNotIn("Author", html)
+
+
 class MalformedTimingDataDoesNotCrashReportTests(unittest.TestCase):
     """End-to-end guard for the final-review finding: a non-numeric value in
     the upstream test-timings data must not crash the whole nightly report
@@ -111,7 +141,7 @@ class MalformedTimingDataDoesNotCrashReportTests(unittest.TestCase):
             "generated_at": "2026-07-03T00:00:00Z",
             "prs": [],
             "pr_count": 0,
-            "test_timings": {
+            "dart_test_timings": {
                 "metadata": {"rebuild_wall_seconds": 10720},
                 "test_timings": {
                     # Malformed: a string instead of a number. This makes
@@ -119,7 +149,7 @@ class MalformedTimingDataDoesNotCrashReportTests(unittest.TestCase):
                     "test/a_test.dart": "not-a-number",
                 },
             },
-            "test_timings_previous": {
+            "dart_test_timings_previous": {
                 "metadata": {"rebuild_wall_seconds": 10000},
                 "test_timings": {
                     "test/a_test.dart": 100.0,

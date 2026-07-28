@@ -269,6 +269,88 @@ def build_rebuild_section(rft):
     )
 
 
+def build_coverage_section(summary):
+    """Return native Dart, C++, and combined coverage, preserving states."""
+    if not summary:
+        return ""
+
+    card_style = (
+        "flex:1;min-width:160px;padding:12px 14px;border:1px solid #e0e0e0;"
+        "border-radius:6px;background:#fafbfc"
+    )
+    cards = []
+    for label, key in (("Dart", "dart"), ("C++", "cpp"), ("Combined", "combined")):
+        metric = summary.get(key) or {}
+        percent = metric.get("percent")
+        status = metric.get("status", "not_applicable")
+        has_percent = isinstance(percent, (int, float)) and not isinstance(percent, bool)
+        value = f"{percent:g}%" if has_percent else esc(status)
+        state = "incomplete" if metric.get("measurement_complete") is False else status
+        lines = metric.get("covered_lines")
+        eligible = metric.get("eligible_source_lines")
+        detail = ""
+        if lines is not None and eligible is not None:
+            detail = (
+                f"<div style='font-size:11px;color:#757575;margin-top:3px'>"
+                f"{esc(lines)} / {esc(eligible)} lines</div>"
+            )
+        cards.append(
+            f"<div style='{card_style}'>"
+            f"<div style='font-size:11px;color:#5f6368;font-weight:700'>{label}</div>"
+            f"<div style='font-size:22px;font-weight:700;color:#202124'>{value}</div>"
+            f"<div style='font-size:11px;color:#757575'>{esc(state)}</div>"
+            f"{detail}</div>"
+        )
+
+    return (
+        f"\n  <!-- Native coverage -->\n"
+        f"  <div class=\"section\">\n"
+        f"    <div class=\"section-label\">Coverage</div>\n"
+        f"    <div style='padding:12px 16px;display:flex;gap:10px'>{''.join(cards)}</div>\n"
+        f"  </div>"
+    )
+
+
+def build_cpp_failures_section(failures):
+    """Return C++ package failures as package/reason rows, or '' if none."""
+    if not failures:
+        return ""
+    rows_data = failures.get("failures") or []
+    if not rows_data:
+        return ""
+
+    count = failures.get("failed_package_count", len(rows_data))
+    th_style = (
+        "padding:9px 11px;background:#c62828;color:#fff;text-align:left;"
+        "font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;"
+        "white-space:nowrap;"
+    )
+    td_style = "padding:8px 11px;border-bottom:1px solid #f1f3f4;vertical-align:top;font-size:12px;"
+    rows = []
+    for index, failure in enumerate(rows_data):
+        row_bg = "#fff8f8" if index % 2 == 0 else "#fafafa"
+        rows.append(
+            f"<tr style='background:{row_bg}'>"
+            f"<td style='{td_style}font-family:monospace'>{esc(failure.get('package_name'))}</td>"
+            f"<td style='{td_style}'>{esc(failure.get('reason'))}</td>"
+            f"</tr>"
+        )
+    table = (
+        f"<table style='border-collapse:collapse;width:100%;font-family:inherit'>"
+        f"<thead><tr><th style='{th_style}'>Package</th>"
+        f"<th style='{th_style}'>Reason</th></tr></thead>"
+        f"<tbody>{''.join(rows)}</tbody></table>"
+    )
+    return (
+        f"\n  <!-- C++ failures -->\n"
+        f"  <div class=\"section rebuild-section\">\n"
+        f"    <div class=\"section-label\" style=\"color:#c62828\">"
+        f"&#9888; C++ Test Failures &mdash; {esc(count)} package(s)</div>\n"
+        f"    {table}\n"
+        f"  </div>"
+    )
+
+
 def fmt_failed_tests(failed_tests):
     if not failed_tests:
         return ""
@@ -460,16 +542,30 @@ def main():
     # ── Rebuild failures section ─────────────────────────────────────────────
 
     try:
-        rebuild_section = build_rebuild_section(data.get("rebuild_failed_tests"))
+        rebuild_section = build_rebuild_section(data.get("dart_failed_tests"))
     except Exception as e:
         print(f"WARNING: build_rebuild_section failed, omitting section: {e}", file=sys.stderr)
         rebuild_section = ""
 
     try:
-        timing_section = build_timing_section(data.get("test_timings"), data.get("test_timings_previous"))
+        timing_section = build_timing_section(
+            data.get("dart_test_timings"), data.get("dart_test_timings_previous")
+        )
     except Exception as e:
         print(f"WARNING: build_timing_section failed, omitting section: {e}", file=sys.stderr)
         timing_section = ""
+
+    try:
+        coverage_section = build_coverage_section(data.get("full_coverage_summary"))
+    except Exception as e:
+        print(f"WARNING: build_coverage_section failed, omitting section: {e}", file=sys.stderr)
+        coverage_section = ""
+
+    try:
+        cpp_failures_section = build_cpp_failures_section(data.get("cpp_failed_tests"))
+    except Exception as e:
+        print(f"WARNING: build_cpp_failures_section failed, omitting section: {e}", file=sys.stderr)
+        cpp_failures_section = ""
 
     # ── Footer ───────────────────────────────────────────────────────────────
 
@@ -646,6 +742,10 @@ def main():
   </div>
 
   {rebuild_section}
+
+  {coverage_section}
+
+  {cpp_failures_section}
 
   <!-- Author notes -->
   <div class="section author-section">
