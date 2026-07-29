@@ -18,7 +18,9 @@ when the repository contains the required validation rules.
 Add a small, token-free refresh script that renders `SKILL.md` to
 `SKILL.local.md` using the current repository path and the existing local
 `recipients.json` path. It does not change git configuration, credentials,
-recipients, report data, or any output artifact.
+recipients, report data, or any output artifact. The local skill will invoke
+this refresh as its first step, then re-read the refreshed local skill before
+performing any report work.
 
 The script will:
 
@@ -29,15 +31,19 @@ The script will:
 5. Print the source template hash and the rendered local-skill hash for
    diagnostics.
 
-`register_tasks.ps1` will add a `NightlyPR-RefreshLocalSkill` Windows task at
-07:55. This is five minutes before the documented 08:00 Cowork task and after
-the 07:00 data fetch. Re-registering tasks updates this task idempotently.
+The current `SKILL.local.md` will be refreshed manually once during rollout so
+it gains this preflight step. After that, every 08:00 Cowork run refreshes its
+own local skill and re-reads it before following the report workflow. No new
+Windows scheduled task is required.
 
 ## Boundaries
 
 - The Cowork task remains responsible for invoking the subagent and running
   `validate_author_notes.py`; the refreshed local skill contains those required
   gates.
+- The refresh step is self-referential by design: the currently loaded local
+  skill performs the render, then discards its stale instructions and follows
+  the freshly generated file from the beginning.
 - Refresh failure leaves the previous `SKILL.local.md` unchanged and exits
   non-zero. It does not send email, render a PDF, or write `run-status.json`.
 - This design does not auto-pull repository commits. Repository updates must be
@@ -47,6 +53,5 @@ the 07:00 data fetch. Re-registering tasks updates this task idempotently.
 
 Unit tests will prove successful rendering, unresolved-token rejection, and
 non-destructive behavior when recipients are absent. Existing setup tests will
-continue to cover the one-time setup path. A PowerShell content assertion will
-verify that task registration creates the 07:55 refresh task and preserves the
-existing fetch and cleanup tasks.
+continue to cover the one-time setup path. A source-content test will verify
+that the template requires refresh-and-re-read before report data is touched.
