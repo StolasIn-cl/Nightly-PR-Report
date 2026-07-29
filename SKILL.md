@@ -203,9 +203,14 @@ html_file = os.environ.get('HTML_FILE', '')
 author_html_file = os.environ.get('AUTHOR_HTML_FILE', '')
 author_html = open(author_html_file, encoding='utf-8').read()
 html = open(html_file, encoding='utf-8').read()
-result = html.replace(placeholder, author_html)
+before_count = html.count(placeholder)
+if before_count != 1:
+    raise RuntimeError(f"Expected exactly one Author Notes placeholder, found {before_count}")
+result = html.replace(placeholder, author_html, 1)
+after_count = result.count(placeholder)
+assert after_count == 0, f"Author Notes placeholder remains after replacement: {after_count}"
 open(html_file, 'w', encoding='utf-8').write(result)
-print("Placeholder replaced:", placeholder not in result)
+print("Placeholder replaced:", after_count == 0)
 PYEOF
 ```
 
