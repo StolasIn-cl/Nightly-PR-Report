@@ -29,6 +29,14 @@ TITLE_ONLY_AUTHOR_HTML = """
   <p>This PR addresses Fix title &amp; escaping.</p>
 </div>
 """
+TITLE_ONLY_AUTHOR_HTML_WITH_LABELS = """
+<div class="pr-entry">
+  <div class="pr-link"><a href="https://example.com/actions/runs/123">#123</a></div>
+  <p><span class="priority-label priority-p1">P1</span>
+     <span class="priority-label priority-p2">P2</span>
+     This PR addresses Fix title &amp; escaping.</p>
+</div>
+"""
 AUTHOR_HTML_WITHOUT_P2 = """
 <div class="pr-entry">
   <div class="pr-link"><a href="https://example.com/actions/runs/123">#123</a></div>
@@ -44,6 +52,11 @@ class ValidateAuthorNotesTests(unittest.TestCase):
     def test_rejects_title_only_summary_for_reviewed_pr(self):
         self.assertIn("title-only", "\n".join(
             validator.validate_author_notes(FIXTURE_DATA, TITLE_ONLY_AUTHOR_HTML)
+        ))
+
+    def test_rejects_title_only_summary_when_it_has_required_priority_labels(self):
+        self.assertIn("title-only", "\n".join(
+            validator.validate_author_notes(FIXTURE_DATA, TITLE_ONLY_AUTHOR_HTML_WITH_LABELS)
         ))
 
     def test_rejects_missing_p2_label_for_explicit_p2_finding(self):

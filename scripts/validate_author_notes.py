@@ -25,6 +25,7 @@ class _AuthorNotesParser(HTMLParser):
         self._entry: dict | None = None
         self._entry_depth: int | None = None
         self._in_summary = False
+        self._priority_label_depth: int | None = None
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         self._depth += 1
@@ -42,6 +43,7 @@ class _AuthorNotesParser(HTMLParser):
         if tag == "p":
             self._in_summary = True
         if "priority-label" in classes:
+            self._priority_label_depth = self._depth
             if "priority-p1" in classes:
                 self._entry["priorities"].add("P1")
             if "priority-p2" in classes:
@@ -50,6 +52,8 @@ class _AuthorNotesParser(HTMLParser):
     def handle_endtag(self, tag: str) -> None:
         if self._entry is not None and tag == "p":
             self._in_summary = False
+        if self._priority_label_depth == self._depth:
+            self._priority_label_depth = None
         if (self._entry is not None and tag == "div"
                 and self._depth == self._entry_depth):
             self._entry = None
@@ -58,7 +62,8 @@ class _AuthorNotesParser(HTMLParser):
         self._depth -= 1
 
     def handle_data(self, data: str) -> None:
-        if self._entry is not None and self._in_summary:
+        if (self._entry is not None and self._in_summary
+                and self._priority_label_depth is None):
             self._entry["summary"].append(data)
 
 
