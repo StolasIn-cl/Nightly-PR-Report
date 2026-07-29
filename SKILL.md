@@ -125,9 +125,10 @@ SLIM_JSON
 
 Group all PRs by author. For each unique author, produce a card that:
 1. Shows the author name as a header (no pass/fail/skip labels or symbols — those are already in the PR table above).
-2. Lists ALL their PRs for the day. For each PR, write 1–2 sentences summarising what changed, sourced from `title` + `commit_message`. Be concrete ("fixed X", "refactored Y", "added Z").
-3. If `review_markdown` contains findings explicitly flagged as high-risk or dangerous, append a warning callout after the PR list. Do NOT invent risks. If no high-risk findings exist, omit the callout entirely. If `review_markdown` is null, write a short italic note "review unavailable".
-4. If any entry in `rebuild_failures` matches this author (match `author_name` to GitHub username, or `author_email` username part to GitHub handle — best effort), append a second warning callout listing the affected test file(s). Use the label "Nightly rebuild failure". Only mention files that actually match this author; omit entirely for authors with no rebuild failures.
+2. Lists ALL their PRs for the day. For each reviewed PR, use `review_markdown` as the primary evidence and concisely paraphrase the reviewed behaviour and impact. Use `title` and `commit_message` only as supporting context; never make either one the whole summary and never merely restate the PR title.
+3. For every finding explicitly marked `[P1]` or `[P2]` in `review_markdown`, write a separate 1–2 sentence summary whose first content is the matching label: `<span class="priority-label priority-p1">P1</span>` or `<span class="priority-label priority-p2">P2</span>`. State the reviewed impact concisely after the label. Do NOT infer a priority from words such as "high-risk" or "dangerous", and do NOT invent risks.
+4. If a reviewed PR has no explicit P1/P2 finding, summarise the behaviour the review examined or state that the review found no actionable regression. If `review_markdown` is null, summarise from the title and commit context and add a short italic note "review unavailable".
+5. If any entry in `rebuild_failures` matches this author (match `author_name` to GitHub username, or `author_email` username part to GitHub handle — best effort), append a warning callout listing the affected test file(s). Use the label "Nightly rebuild failure". Only mention files that actually match this author; omit entirely for authors with no rebuild failures.
 
 Generate HTML for ALL authors combined using ONLY this structure (modern div-based, no Outlook constraints):
 
@@ -145,18 +146,12 @@ Generate HTML for ALL authors combined using ONLY this structure (modern div-bas
         <a href="RUN_URL" style="color:#1565c0;font-weight:700;text-decoration:none">#PR_NUMBER</a>
         &nbsp;—&nbsp;PR_TITLE
       </div>
-      <p>SYNTHESISED_SUMMARY</p>
+      <!-- Repeat this paragraph once per explicit P1/P2 finding. Use priority-p2 for P2. -->
+      <p><span class="priority-label priority-p1">P1</span> The review found ...</p>
+      <!-- With no explicit P1/P2 finding, use one unlabeled review-led summary paragraph. -->
+      <p>REVIEWED_BEHAVIOUR_OR_NO_ACTIONABLE_REGRESSION</p>
     </div>
     <!-- ── End per-PR repeat ── -->
-
-    <!-- High-risk callout: ONLY include if review explicitly flags high-risk issues -->
-    <div class="risk-callout">
-      <div class="bar"></div>
-      <div class="content">
-        <span class="label">&#9888; High-risk: </span>
-        <span style="color:#5f6368">FINDING</span>
-      </div>
-    </div>
 
     <!-- Nightly rebuild failure callout: ONLY include if this author matches rebuild_failures -->
     <div class="risk-callout" style="margin-top:4px">
@@ -167,7 +162,7 @@ Generate HTML for ALL authors combined using ONLY this structure (modern div-bas
       </div>
     </div>
 
-    <!-- Review unavailable: INSTEAD of high-risk when review_markdown is null -->
+    <!-- Review unavailable: ONLY include when review_markdown is null -->
     <p class="review-unavailable">review unavailable</p>
 
   </div>
@@ -181,19 +176,32 @@ Rules:
 - HTML-escape all user-sourced strings (PR titles, author names, commit summaries, test file paths).
 - The CSS classes (author-card, author-card-header, pr-entry, etc.) are defined in the report's stylesheet — use them exactly as shown.
 - All PRs by the same author go inside one author block as multiple pr-entry divs.
-- Omit the risk-callout div entirely if no findings. Omit review-unavailable if review IS available.
+- Every explicit `[P1]` or `[P2]` finding must appear in its PR's `pr-entry`, and the matching compact label must be the first content in that finding's summary paragraph.
+- Never add a priority label or risk claim unless it is explicitly supported by `review_markdown`.
+- A reviewed PR summary must paraphrase review evidence; a title-only or commit-only restatement is invalid. With no explicit findings, state reviewed behaviour or that there was no actionable regression.
+- Omit review-unavailable if review IS available.
 - Omit the rebuild failure callout if this author has no matching entry in `rebuild_failures`.
 - Keep each PR summary to 1–2 sentences.
 ---
 
-The agent's response is the complete `author_html`. Write it to the HTML file using Python inline:
+The agent's response is the complete `author_html`. Save the raw response as `$NR_DIR/author-summary.html`, then validate it before inserting it into the report:
+
+```bash
+export AUTHOR_HTML_FILE=$NR_DIR/author-summary.html
+python3 scripts/validate_author_notes.py --data "$DATA_FILE" --html "$AUTHOR_HTML_FILE" \
+  || { echo "ERROR: Author Notes validation failed; do not render the PDF."; exit 1; }
+echo "Author Notes validation passed"
+```
+
+Only after validation succeeds, write it to the HTML file using Python inline:
 
 ```python
 python3 << 'PYEOF'
 import os
 placeholder = '<!-- AUTHOR_SUMMARY -->'
 html_file = os.environ.get('HTML_FILE', '')
-author_html = """PASTE_AGENT_RESPONSE_HERE"""
+author_html_file = os.environ.get('AUTHOR_HTML_FILE', '')
+author_html = open(author_html_file, encoding='utf-8').read()
 html = open(html_file, encoding='utf-8').read()
 result = html.replace(placeholder, author_html)
 open(html_file, 'w', encoding='utf-8').write(result)
@@ -227,7 +235,12 @@ chromium --headless --disable-gpu --print-to-pdf="$PDF_FILE" \
   --print-to-pdf-no-header "file://$HTML_FILE" 2>/dev/null
 ```
 
-Store the path as `PDF_FILE=$NR_DIR/nightly-report.pdf` for use in Step 5.
+Validate the local output after either renderer:
+```bash
+test -s "$PDF_FILE" || { echo "ERROR: local PDF is empty or missing."; exit 1; }
+```
+
+For this local-only execution, stop after the non-empty PDF check succeeds. Do **not** continue to Step 5: do not open Chrome or Outlook, attach or send the PDF, or write `run-status.json`.
 
 ---
 
