@@ -26,10 +26,22 @@ If `NR_DIR` is empty, stop and report the error: "Nightly-PR-Report directory no
 
 ## Step 0 — Refresh local workflow instructions
 
-Before reading report data, refresh the local, path-resolved skill from the committed template:
+Before reading report data, refresh the local, path-resolved skill from the committed template. The session mount can be stale, so do **not** read the refresher or template from `$SCRIPTS` or `$NR_DIR` in bash.
+
+Use the trusted Windows **Read** and **Write** workflow, as in Step 2:
+
+1. Use the Read tool on `{{NR_DIR_WINDOWS}}\scripts\refresh_local_skill.py`, then use the Write tool to write that exact content to `refresh_local_skill.py` in the current session outputs directory on Windows.
+2. Use the Read tool on `{{NR_DIR_WINDOWS}}\SKILL.md`, then use the Write tool to write that exact content to `SKILL.md` in the same session outputs directory on Windows.
+3. Resolve those two outputs and run the copied refresher. `--repo-dir` remains the session repository for `recipients.json` and `SKILL.local.md`; `--windows-repo-dir` is the trusted Windows root used for every Windows-path placeholder:
 
 ```bash
-python3 "$SCRIPTS/refresh_local_skill.py" --repo-dir "$NR_DIR" \
+REFRESH_OUT_DIR=$(ls -d /sessions/*/mnt/outputs 2>/dev/null | head -1)
+[ -n "$REFRESH_OUT_DIR" ] || { echo "ERROR: Session outputs directory not found."; exit 1; }
+REFRESH_SCRIPT_OUT="$REFRESH_OUT_DIR/refresh_local_skill.py"
+TEMPLATE_OUT="$REFRESH_OUT_DIR/SKILL.md"
+python3 "$REFRESH_SCRIPT_OUT" --repo-dir "$NR_DIR" \
+  --template-path "$TEMPLATE_OUT" \
+  --windows-repo-dir "{{NR_DIR_WINDOWS}}" \
   || { echo "ERROR: Failed to refresh SKILL.local.md; stop before reading report data."; exit 1; }
 ```
 

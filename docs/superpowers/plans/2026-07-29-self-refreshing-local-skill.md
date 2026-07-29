@@ -90,3 +90,21 @@ def test_template_requires_refresh_then_continue_at_step_one(self):
 - [ ] **Step 1: Run the refresher against the current repository** — require success and output hashes.
 - [ ] **Step 2: Confirm local workflow content** — verify `SKILL.local.md` has no `{{...}}` tokens and contains the review-led P1/P2, validation, PDF, and Step 0 instructions.
 - [ ] **Step 3: Preserve scope** — do not stage or commit `SKILL.local.md`, report outputs, or existing user-local files.
+
+### Task 4: Harden the refresh boundary
+
+**Files:**
+- Modify: `scripts/refresh_local_skill.py`
+- Modify: `scripts/tests/test_refresh_local_skill.py`
+- Modify: `SKILL.md:Step 0`
+
+**Interfaces:**
+- The refresher accepts a trusted template path and an explicit Windows repository path, while still writing `SKILL.local.md` through the session repository path.
+- Rendering preserves the template's exact newline bytes except for intended placeholder substitution, and computes the local hash before replacing the existing output.
+- Step 0 uses the Windows Read/Write workflow already used for report sources so its script/template inputs cannot come from a stale session mount.
+
+- [ ] **Step 1: Add failing cross-platform and CRLF tests** — demonstrate that a trusted Windows root renders Windows paths and a CRLF template does not become `CRCRLF`.
+- [ ] **Step 2: Verify RED** — run the focused refresher tests and confirm the new assertions fail.
+- [ ] **Step 3: Implement safe explicit inputs** — add the minimal CLI/API inputs, preserve atomic output behavior, and precompute the rendered-byte hash before replace.
+- [ ] **Step 4: Harden Step 0** — read the refresher and template at their trusted Windows paths into the current session outputs directory, then run that copy with an explicit Windows root before continuing at Step 1.
+- [ ] **Step 5: Verify GREEN** — run the focused and complete test suites; manually refresh the ignored local skill without staging it.
