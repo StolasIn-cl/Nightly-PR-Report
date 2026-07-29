@@ -203,6 +203,14 @@ Get-ScheduledTask -TaskName "NightlyPR-Cleanup"
 
 請注意：**Cowork 應使用 `SKILL.local.md`，不是 `SKILL.md`。**
 
+每次更新 repo 後，先在 repo 根目錄手動執行一次：
+
+```powershell
+python scripts\refresh_local_skill.py
+```
+
+這會以最新的 `SKILL.md` 重新產生本機 `SKILL.local.md`。之後 Cowork 仍持續指向 `SKILL.local.md`；每次執行報告前，它也會自動重新整理一次，確保流程與已提交的模板同步。
+
 你可以在 Cowork 建立每天 08:00 的排程，內容讀取：
 
 ```text

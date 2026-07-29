@@ -89,6 +89,11 @@ class RefreshLocalSkillTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertEqual(self.local_text(), "previous local skill\n")
 
+    def test_template_requires_refresh_then_continue_at_step_one(self):
+        template = (REPO_ROOT / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("refresh_local_skill.py", template)
+        self.assertIn("continue at Step 1", template)
+
 
 if __name__ == "__main__":
     unittest.main()

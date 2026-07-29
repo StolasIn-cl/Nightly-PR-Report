@@ -24,6 +24,19 @@ If `NR_DIR` is empty, stop and report the error: "Nightly-PR-Report directory no
 
 ---
 
+## Step 0 — Refresh local workflow instructions
+
+Before reading report data, refresh the local, path-resolved skill from the committed template:
+
+```bash
+python3 "$SCRIPTS/refresh_local_skill.py" --repo-dir "$NR_DIR" \
+  || { echo "ERROR: Failed to refresh SKILL.local.md; stop before reading report data."; exit 1; }
+```
+
+After the command succeeds, re-read the current `SKILL.local.md` and continue at Step 1. Do not execute Step 0 again during this run.
+
+---
+
 ## Step 1 — Read pre-fetched data
 
 The file at `$DATA_FILE` is written by `run_fetch.bat` (Windows Task Scheduler, 07:00 AM) before this task runs.
