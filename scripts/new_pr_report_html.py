@@ -683,6 +683,20 @@ def main():
       color: #5f6368;
       line-height: 1.55;
     }}
+    .priority-label {{
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 5px;
+    }}
+    .priority-p1 {{
+      background: #fce8e6;
+      color: #b3261e;
+    }}
+    .priority-p2 {{
+      background: #fff3e0;
+      color: #b06000;
+    }}
 
     /* ── High-risk callout ── */
     .risk-callout {{

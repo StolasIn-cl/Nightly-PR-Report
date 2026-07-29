@@ -198,6 +198,13 @@ class ReportLayoutTests(unittest.TestCase):
         self.assertNotIn("Coverage <strong", html)
         self.assertNotIn("40318/290815 lines", html)
 
+    def test_report_styles_priority_labels_without_coloring_note_bodies(self):
+        report_html = self.render_report_with_full_coverage()
+
+        self.assertIn(".priority-label", report_html)
+        self.assertIn(".priority-p1", report_html)
+        self.assertIn(".priority-p2", report_html)
+
 
 class MalformedTimingDataDoesNotCrashReportTests(unittest.TestCase):
     """End-to-end guard for the final-review finding: a non-numeric value in
