@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Render the machine-local Nightly PR Report skill without requiring a token."""
 
+from __future__ import annotations
+
 import argparse
 import hashlib
 import json

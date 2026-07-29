@@ -1,3 +1,4 @@
+import ast
 import hashlib
 import json
 import subprocess
@@ -53,6 +54,19 @@ class RefreshLocalSkillTests(unittest.TestCase):
         self.assertNotIn("{{RECIPIENTS_PATH_WINDOWS}}", self.local_text())
         self.assertNotIn("{{PDF_PATH_WINDOWS}}", self.local_text())
         self.assertIn(str(self.repo.resolve()).replace("/", "\\"), self.local_text())
+
+    def test_refresher_defers_annotations_for_python_39(self):
+        source = (SCRIPTS_DIR / "refresh_local_skill.py").read_text(encoding="utf-8")
+        module = ast.parse(source)
+        future_imports = [
+            node
+            for node in module.body
+            if isinstance(node, ast.ImportFrom) and node.module == "__future__"
+        ]
+        self.assertTrue(
+            any(alias.name == "annotations" for node in future_imports for alias in node.names),
+            "Python 3.9 must defer PEP 604 annotation evaluation",
+        )
 
     def test_explicit_windows_root_renders_windows_paths_from_trusted_template(self):
         trusted_template = self.repo / "trusted-SKILL.md"
