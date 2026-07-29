@@ -43,6 +43,18 @@ def parse_json(raw):
         return None
 
 
+def load_branch_artifacts(ref, git_root):
+    paths = {
+        "codebase_coverage": "codebase-coverage.json",
+        "full_coverage_summary": "full-coverage-summary.json",
+        "dart_failed_tests": "dart-failed-tests.json",
+        "cpp_failed_tests": "cpp-failed-tests.json",
+        "dart_test_timings": "dart-test-timings.json",
+        "dart_test_timings_previous": "dart-test-timings-previous.json",
+    }
+    return {key: parse_json(git_show(ref, path, git_root)) for key, path in paths.items()}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--date",        default="",  help="YYYY-MM-DD (default: today)")
@@ -94,21 +106,15 @@ def main():
     # The default order is alphabetical by SHA, which is not meaningful.
     prs.sort(key=lambda p: (p.get("summary") or {}).get("generated_at") or "")
 
-    codebase_coverage    = parse_json(git_show(ref, "codebase-coverage.json",    git_root))
-    rebuild_failed_tests = parse_json(git_show(ref, "rebuild-failed-tests.json", git_root))
-    test_timings         = parse_json(git_show(ref, "test-timings.json",         git_root))
-    test_timings_previous = parse_json(git_show(ref, "test-timings-previous.json", git_root))
+    artifacts = load_branch_artifacts(ref, git_root)
 
     report = {
         "date":                   date,
         "generated_at":           datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
         "data_branch":            data_branch,
-        "codebase_coverage":      codebase_coverage,
-        "rebuild_failed_tests":   rebuild_failed_tests,
-        "test_timings":           test_timings,
-        "test_timings_previous":  test_timings_previous,
         "pr_count":               len(prs),
         "prs":                    prs,
+        **artifacts,
     }
 
     out_dir = os.path.dirname(out_file)
