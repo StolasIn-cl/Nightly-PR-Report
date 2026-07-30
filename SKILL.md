@@ -11,8 +11,10 @@ For the local machine that renders this template, the Windows repo root is `{{NR
 
 The session name changes on every run — never hardcode it. Resolve paths dynamically:
 
+**Each bash call is independent: the working directory resets and shell variables do not carry over.** Re-run this whole block at the start of every bash call that uses `$NR_DIR`, `$DATA_FILE`, `$HTML_FILE`, `$AUTHOR_HTML_FILE`, or `$RECIPIENTS_FILE`. Never rely on exports from an earlier call, and never invoke a script by a relative path such as `scripts/foo.py` — always use `$NR_DIR/scripts/foo.py`.
+
 ```bash
-NR_DIR=$(ls -d /sessions/*/mnt/Nightly-PR-Report 2>/dev/null | head -1)
+export NR_DIR=$(ls -d /sessions/*/mnt/Nightly-PR-Report 2>/dev/null | head -1)
 export SCRIPTS=$NR_DIR/scripts
 export DATA_FILE=$NR_DIR/nightly-report-data.json
 export HTML_FILE=$NR_DIR/nightly-report.html
@@ -54,7 +56,7 @@ After the command succeeds, re-read the current `SKILL.local.md` and continue at
 The file at `$DATA_FILE` is written by `run_fetch.bat` (Windows Task Scheduler, 07:00 AM) before this task runs.
 
 ```bash
-# Verify the file exists and is from today
+# Verify the file exists and covers yesterday (run_fetch.bat collects the previous day's PRs)
 python3 << 'PYEOF'
 import json, os, datetime, sys
 f = os.environ.get('DATA_FILE', '')
@@ -63,9 +65,9 @@ if not os.path.exists(f):
     sys.exit(1)
 data = json.load(open(f, encoding='utf-8'))
 date = data.get('date', '')
-today = datetime.date.today().strftime('%Y-%m-%d')
-if date != today:
-    print(f"WARN: data is from {date}, not today ({today}). Proceeding anyway.")
+yesterday = (datetime.date.today() - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
+if date != yesterday:
+    print(f"WARN: data is from {date}, not yesterday ({yesterday}). Proceeding anyway.")
 print(f"OK: {data.get('pr_count', 0)} PR(s) for {date}")
 PYEOF
 ```
@@ -213,7 +215,7 @@ The agent's response is the complete `author_html`. Save the raw response as `$N
 
 ```bash
 export AUTHOR_HTML_FILE=$NR_DIR/author-summary.html
-python3 scripts/validate_author_notes.py --data "$DATA_FILE" --html "$AUTHOR_HTML_FILE" \
+python3 "$NR_DIR/scripts/validate_author_notes.py" --data "$DATA_FILE" --html "$AUTHOR_HTML_FILE" \
   || { echo "ERROR: Author Notes validation failed; do not render the PDF."; exit 1; }
 echo "Author Notes validation passed"
 ```
@@ -270,7 +272,7 @@ Validate the local output after either renderer:
 test -s "$PDF_FILE" || { echo "ERROR: local PDF is empty or missing."; exit 1; }
 ```
 
-For this local-only execution, stop after the non-empty PDF check succeeds. Do **not** continue to Step 5: do not open Chrome or Outlook, attach or send the PDF, or write `run-status.json`.
+Store the path as `PDF_FILE=$NR_DIR/nightly-report.pdf` for use in Step 5, then continue to Step 5 and send the report. Sending the email is a required part of this task.
 
 ---
 
@@ -288,10 +290,10 @@ Compute from the data file:
 
 Use the user's **Chrome** profile for Outlook so its existing Microsoft sign-in can be reused. Do not assume the in-app browser is signed in.
 
-- Before opening or composing in Outlook, confirm that the ChatGPT Chrome Extension is reachable. If it is unavailable, wait 2 seconds and retry once. If it is still unavailable, stop and report the browser-connection problem; do not create an email and do not write `run-status.json`.
+- Before opening or composing in Outlook, confirm that a browser-control extension is reachable. Whichever agent runs this task, accept either the **ChatGPT Chrome Extension** or **Claude in Chrome** — use whichever one is available and do not require a specific vendor. If neither is available, wait 2 seconds and retry once. If neither is still available, stop and report the browser-connection problem; do not create an email and do not write `run-status.json`.
 - Open Outlook using the user-provided Chrome bookmark when available, or navigate to `https://outlook.office.com` in the same Chrome profile. If the page shows a Microsoft sign-in screen, stop and ask the user to sign in in Chrome; do not switch browsers.
 - Do **not** navigate to `chrome://extensions` or any other Chrome-internal settings page. Browser control may block internal URLs, and that block does not mean the **Allow access to file URLs** setting is disabled.
-- Verify file-URL access only through the normal attachment flow in Step 5e: a general attachment chooser that accepts the local PDF is the success signal. If the chooser is blocked or the upload fails, stop immediately without sending or writing `run-status.json`. Tell the user to manually check **Extensions → Manage Extensions → ChatGPT Chrome Extension → Details → Allow access to file URLs**, then rerun the task. Do not retry by attaching an image-only input or by using a native file picker.
+- Verify file-URL access only through the normal attachment flow in Step 5e: a general attachment chooser that accepts the local PDF is the success signal. If the chooser is blocked or the upload fails, stop immediately without sending or writing `run-status.json`. Tell the user to manually check **Extensions → Manage Extensions → (ChatGPT Chrome Extension *or* Claude in Chrome, whichever this run used) → Details → Allow access to file URLs**, then rerun the task. Do not retry by attaching an image-only input or by using a native file picker.
 
 ### 5a. Open Outlook Web
 
