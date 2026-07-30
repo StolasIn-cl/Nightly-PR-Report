@@ -4,6 +4,7 @@ __pycache__/
 .agents/
 .claude/
 .superpowers/
+outputs/
 
 SKILL.local.md
 

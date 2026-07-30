@@ -1,0 +1,473 @@
+{
+  "prs": [
+    {
+      "author": "StolasIn-cl",
+      "pr_number": 1721,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30320778748",
+      "title": "PRP265523-0018 PRP265523-0058",
+      "outcome": "fail",
+      "commit_message": null,
+      "review_markdown": null
+    },
+    {
+      "author": "LeonTsai-cl",
+      "pr_number": 1720,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30320395840",
+      "title": "Fix MyEditFeatureCard hover state loss and ProviderContainer leak",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "No actionable regressions were found in the reviewed diff. The state ownership change and added widget tests appear consistent with the intended behavior.\n"
+    },
+    {
+      "author": "LeonTsai-cl",
+      "pr_number": 1719,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30320137187",
+      "title": "[What] Add a \"Create videos from scratch\" section to Video Edit by Chat",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "The patch adds user-visible strings without updating the non-English generated message catalogs, and the newly selected Text to Video GUIDs are not connected to the CEIP map used by the reused card. These are user-visible and telemetry regressions that should be fixed.\n\nFull review comments:\n\n- [P2] Add localized entries for the new UI strings — C:\\actions-runner\\_work\\promeo-pc-promeo\\promeo-pc-promeo\\promeo_trunk\\lib\\src\\view\\video_edit_by_chat\\widgets\\video_edit_by_chat_scratch_section.dart:88-88\n  In non-English locales, these new `S.of(context)` keys are not present in the generated locale lookup files (`messages_de.dart`, `messages_fr.dart`, etc.); only `messages_en.dart` was updated. As a result, the new scratch section title and button label fall back to English in localized builds, unlike the existing `video_edit_by_chat_edit_from_scratch` string which has per-locale entries.\n\n- [P2] Wire Text to Video GUIDs into CEIP mapping — C:\\actions-runner\\_work\\promeo-pc-promeo\\promeo-pc-promeo\\promeo_trunk\\lib\\src\\model\\ai_lab_tools\\my_edit_feature\\my_edit_feature_def.dart:13-16\n  When the CMS card matches one of these new `textToVideoIds`, tapping the reused `MyEditFeatureCard` will not send the intended CEIP click log because `MyEditFeatureCard` looks up `aiModelLabFeatureMap[config.id]`, and that map currently only contains `AI_Model_Lab_Feature_TTI` and `_I2V`. This makes the new Text to Video entry silently skip CEIP logging for the GUIDs this helper explicitly selects.\n"
+    },
+    {
+      "author": "ElevenLin-cl",
+      "pr_number": 1723,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30321865157",
+      "title": "[What] Fix failed test case",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "The requested diff against 0f598ae4b4ecba5f84e0fb904decd87a859a1292 is empty, so there are no changed lines to review or regressions introduced by this patch.\n"
+    },
+    {
+      "author": "StolasIn-cl",
+      "pr_number": 1722,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30321752833",
+      "title": "PRP265516-0022",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "I did not identify any discrete, actionable regression introduced by these changes. The photo-only send/retry path and save tooltip updates appear consistent with the modified tests and surrounding code.\n"
+    },
+    {
+      "author": "LeonTsai-cl",
+      "pr_number": 1724,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30322149447",
+      "title": "[What] eBug:PRP265527-0010",
+      "outcome": "fail",
+      "commit_message": null,
+      "review_markdown": null
+    },
+    {
+      "author": "StolasIn-cl",
+      "pr_number": 1721,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30321908240",
+      "title": "PRP265523-0018 PRP265523-0058",
+      "outcome": "fail",
+      "commit_message": null,
+      "review_markdown": null
+    },
+    {
+      "author": "AndrewLiang-cl",
+      "pr_number": 1725,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30323531269",
+      "title": "[eBug:PRP265517-0010] Add Cancel to AI Design Studio extraction",
+      "outcome": "fail",
+      "commit_message": null,
+      "review_markdown": null
+    },
+    {
+      "author": "JoeWu-CL",
+      "pr_number": 1726,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30324959938",
+      "title": "eBug:PRP265521-0033 PMO 8.22 - [UX] Image to Video: Expanded edit box blends into the background and looks read-only",
+      "outcome": "fail",
+      "commit_message": null,
+      "review_markdown": null
+    },
+    {
+      "author": "LeonTsai-cl",
+      "pr_number": 1720,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30325591285",
+      "title": "Fix MyEditFeatureCard hover state loss and ProviderContainer leak",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "The diff against merge base 6ea8042f54836176caeb99078fe772039cc08280 is empty, so there are no code changes to review and no regressions introduced by this patch.\n"
+    },
+    {
+      "author": "AndrewLiang-cl",
+      "pr_number": 1725,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30325806907",
+      "title": "[eBug:PRP265517-0010] Add Cancel to AI Design Studio extraction",
+      "outcome": "fail",
+      "commit_message": null,
+      "review_markdown": null
+    },
+    {
+      "author": "JoeWu-CL",
+      "pr_number": 1727,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30326089493",
+      "title": "[What] Fix the V2V intro dialog being too flat and too wide on scaled displays",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "I did not identify any discrete regression in the changed dialog layout or added tests that would clearly break existing behavior.\n"
+    },
+    {
+      "author": "LeonTsai-cl",
+      "pr_number": 1729,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30326240124",
+      "title": "[What] Update None transition open panel icon",
+      "outcome": "fail",
+      "commit_message": null,
+      "review_markdown": null
+    },
+    {
+      "author": "AndrewLiang-cl",
+      "pr_number": 1731,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30326545140",
+      "title": "Separate Agent and AI Design Studio edit text flows",
+      "outcome": "fail",
+      "commit_message": null,
+      "review_markdown": null
+    },
+    {
+      "author": "WayneXYLin-cl",
+      "pr_number": 1730,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30326502419",
+      "title": "Fix ebug:PRP265523-0014 & PRP265523-0015 ",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "The patch introduces an AIPC-visible build path that can synchronously mutate a provider watched by the same widget, which can break the UI during mode toggles. This should be fixed before considering the patch correct.\n\nReview comment:\n\n- [P2] Defer free-trial refresh out of build — C:\\actions-runner\\_work\\promeo-pc-promeo\\promeo-pc-promeo\\promeo_trunk\\lib\\src\\view\\preview_panel_widget\\ai_background_blend_button.dart:93-93\n  When the blend button is visible and the user switches into AIPC Mode after `isFreeTrialForDisplayProvider` was true, this call synchronously clears that same watched provider via `refreshDisplayFreeTrialAvailability()` because `freeTrialConsumeCredit` becomes false in AIPC. Riverpod disallows modifying a watched provider while the widget is building, so this can throw during the AIPC toggle path that this patch newly makes visible; trigger the refresh from a post-frame callback/listener instead of directly in `build()`.\n"
+    },
+    {
+      "author": "AngusHung-cl",
+      "pr_number": 1732,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30327276394",
+      "title": "Fix PMO blank page after opening and closing different designers PRP265527-0007",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "The change preserves the previous defaultEdit guard while broadening the Home-state resolution to avoid rendering the invisible Edit slot for stale edit navigation options. The added tests cover the new behavior and the preserved regression case, and I did not identify a discrete correctness issue introduced by this patch.\n"
+    },
+    {
+      "author": "AngusHung-cl",
+      "pr_number": 1734,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30328738203",
+      "title": "[Export] eBug: PRP265527-0008 PMO 8.22 - Edit: Fix Export & Share button remaining on the Home page after returning from designers",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "The patch fixes one direct Home-return path but introduces an inconsistent navigation state for existing non-home leave flows whose overrides do not forward the parameter to `super.leaveView`. That can break edit/feature UI state after transitions such as Batch Edit to Background Effects.\n\nReview comment:\n\n- [P2] Preserve the nav option when callers are not returning home — C:\\actions-runner\\_work\\promeo-pc-promeo\\promeo-pc-promeo\\promeo_trunk\\lib\\src\\controller\\base_navigation_option_view_controller.dart:234-240\n  When a subclass fails to forward `backToHomePage: false`, this new provider update resets the shared nav option to `ContentEnum.home` even though the caller is staying in another edit/feature context. This is already hit by `BatchEditViewController.leaveView(backToHomePage: false)`, which calls `super.leaveView()` with the default before switching to `MainPageEnum.backgroundEffects`, leaving `browseEditModeProvider` on the feature page while `mainNavigationOptionProvider` incorrectly says Home; UI that gates edit behavior on `mainNavigationOptionProvider.toMainPage()` will be disabled/hidden in that flow.\n"
+    },
+    {
+      "author": "StolasIn-cl",
+      "pr_number": 1735,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30329850636",
+      "title": "[What] eBug: PRP265523-0029 PMO 8.22 - [UX] Promeo Agent: Re-generate…",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "The changes consistently migrate the removed borderless button style to outlined pills, including persisted v1 snapshot decoding and updated tests. I did not find a discrete regression introduced by this diff.\n"
+    },
+    {
+      "author": "AndrewLiang-cl",
+      "pr_number": 1733,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30327285962",
+      "title": "Show AI Design Advisor button for flattened image-design projects",
+      "outcome": "fail",
+      "commit_message": null,
+      "review_markdown": null
+    },
+    {
+      "author": "AndrewLiang-cl",
+      "pr_number": 1731,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30330162491",
+      "title": "Separate Agent and AI Design Studio edit text flows",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "The patch removes the flattened edit mode for agent-generated AI Design Studio outputs, causing their Edit action to run the text-decomposition flow unconditionally. This is a functional regression for those outputs.\n\nReview comment:\n\n- [P1] Preserve flattened edit mode for agent images — C:\\actions-runner\\_work\\promeo-pc-promeo\\promeo-pc-promeo\\promeo_trunk\\lib\\agent_studio\\test_page\\controller\\agent_chat_generation_mixin.dart:387-387\n  When the Edit action is created for an `AiDesignStudioOutputItem`, this now calls `enterEditViewWithBackground` without any way to request the flattened path, while the controller now always starts text extraction/decomposition. For agent-generated image results, this regresses the documented flattened-image behavior: generated text can be decomposed/replaced (or fail on decomposition) instead of opening the original result directly.\n"
+    },
+    {
+      "author": "AndrewLiang-cl",
+      "pr_number": 1736,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30331457305",
+      "title": "[eBug][PRP265527-0003] Preserve AIPC download cancellation outcome",
+      "outcome": "fail",
+      "commit_message": null,
+      "review_markdown": null
+    },
+    {
+      "author": "AndrewLiang-cl",
+      "pr_number": 1737,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30331794738",
+      "title": "[What] Show AI Design Advisor button for flattened image-design projects",
+      "outcome": "fail",
+      "commit_message": null,
+      "review_markdown": null
+    },
+    {
+      "author": "AndrewLiang-cl",
+      "pr_number": 1738,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30332960497",
+      "title": "eBug: PRP265513-0064 Basic Text auto-wrap on overflow",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "The paste auto-wrap behavior does not apply to the existing menu/context-menu paste path because the new logic only recognizes the transient `isPaste` flag. This leaves a user-visible paste scenario unaffected by the change.\n\nReview comment:\n\n- [P2] Honor paste origin when detecting pasted text — C:\\actions-runner\\_work\\promeo-pc-promeo\\promeo-pc-promeo\\promeo_trunk\\lib\\src\\controller\\edit\\string_editing_handler_base.dart:1789-1791\n  When text is pasted via `EditMenuController._onClickPaste` (menu/context-menu paste while in caret mode), that caller invokes `editNotifier.insertText(clipboardData.text!)` without setting `strEdtHandler.isPaste`; because this new detection only keys off `isPaste` and ignores `TextInsertionOrigin.paste`, the new paste auto-wrap path is skipped and long clipboard text can still overflow the canvas. Treat the paste origin here or update that caller to mark the insertion as paste before calling `insertText`.\n"
+    },
+    {
+      "author": "LeonTsai-cl",
+      "pr_number": 1739,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30333316230",
+      "title": "-------- close Promeo 8.22.0.5528 -----------",
+      "outcome": "skipped",
+      "commit_message": null,
+      "review_markdown": "The patch only adds a new top changelog version entry and does not modify executable code or configuration. I found no actionable correctness issues in the diff.\n"
+    },
+    {
+      "author": "PaxtonHsu-cl",
+      "pr_number": 1717,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30334760629",
+      "title": "[What] eBug:",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "The patch can leave the newly added Video Edit by Chat free-trial button in a stale state after user actions that change the estimated credit cost. This affects whether sends are presented and routed as free-trial or paid.\n\nReview comment:\n\n- [P2] Refresh free-trial state on all cost input changes — C:\\actions-runner\\_work\\promeo-pc-promeo\\promeo-pc-promeo\\promeo_trunk\\lib\\src\\view\\video_edit_by_chat\\video_edit_by_chat_view.dart:253-253\n  When the V2V free-trial button is driven from `getFreeTrialCreditCost()`, the cost depends on `_estimateTotalCredits()` (model settings plus billable duration), but this UI only refreshes availability when the uploaded video path changes. If the user selects an inspiration from an empty prompt, trims the source, or changes quality/audio settings so the estimated cost crosses the remaining-credit threshold, `isFreeTrialProvider` can stay stale and either hide an available trial or keep showing/routing the free-trial send when it should not.\n"
+    },
+    {
+      "author": "LeonTsai-cl",
+      "pr_number": 1739,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30336188819",
+      "title": "-------- close Promeo 8.22.0.5528 -----------",
+      "outcome": "skipped",
+      "commit_message": null,
+      "review_markdown": "The diff only adds a new ChangeLog version header and does not introduce executable code or apparent behavioral risk.\n"
+    },
+    {
+      "author": "AndrewLiang-cl",
+      "pr_number": 1738,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30337342353",
+      "title": "eBug: PRP265513-0064 Basic Text auto-wrap on overflow",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "The paste auto-wrap feature is bypassed for an existing paste path that does not set the internal Ctrl+V paste flag, so the patch does not consistently implement its intended behavior.\n\nReview comment:\n\n- [P2] Honor paste origin when constraining pasted text — C:\\actions-runner\\_work\\promeo-pc-promeo\\promeo-pc-promeo\\promeo_trunk\\lib\\src\\controller\\edit\\string_editing_handler_base.dart:1789-1789\n  When text is pasted via the edit context/menu path, `EditNotifier.insertText(clipboardData.text!)` is called without the Ctrl+V key handler that sets `isPaste`, so this new check treats that paste as programmatic text and never calls `constrainPastedTextLayout()`. In that scenario, oversized pasted title text still overflows instead of enabling auto line break; consider driving this from an explicit paste origin or setting the paste flag at all paste entry points.\n"
+    },
+    {
+      "author": "HenryCHLiu-cl",
+      "pr_number": 1742,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30337908375",
+      "title": "[what] PRP265423-0028 - PMO 8.21 - Video edit by chat (Preview): The …",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "The shared backdrop helper is reasonable, but the hover preview now switches to the black-backed texture as soon as the texture provider reports ready, which can occur before the first frame is rendered and regresses the intended thumbnail loading behavior.\n\nReview comment:\n\n- [P2] Gate hover texture on a rendered frame — C:/actions-runner/_work/promeo-pc-promeo/promeo-pc-promeo/promeo_trunk/lib/src/view/common_widget/video_hover_preview.dart:131-131\n  When `VideoPlayerController` starts, `_player` is assigned before `apply()` completes, so this widget watches the texture providers while the controller is still inside `enableRenderlessMode`/`loadVideoRenderless`. In that window `onTextureUpdate` can set `textureReady` and `textureId` before `refreshFrame()` has painted the first video frame; with the new `RenderlessTextureStack`, `showTexture` then inserts the opaque black backdrop and hides the poster during hover-preview loading instead of showing the thumbnail until a frame is actually available.\n"
+    },
+    {
+      "author": "StevenLKLiu-cl",
+      "pr_number": 1741,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30336635058",
+      "title": "[What] eBug: PRP265527-0004 & PRP265527-0005",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "The patch can consume a user's V2V free trial before later validation rejects the request, causing a lost trial without a generated task. This is a functional regression in the new free-trial flow.\n\nReview comment:\n\n- [P2] Defer free-trial claim until after send validation — C:\\actions-runner\\_work\\promeo-pc-promeo\\promeo-pc-promeo\\promeo_trunk\\lib\\src\\controller\\video_edit_by_chat\\video_edit_by_chat_view_controller.dart:2642-2642\n  When the free-trial button is used with a V2V request that later fails pre-upload validation (for example a reference image rejected by `VideoEditByChatGenerationMixin._runLifecycle`'s image content gate), `claimFreeTrial` has already called the server claim API here, so the user's trial is consumed even though no generation session is created. Consider claiming only after the request is built and the lifecycle's blocking validation has passed, just before preparing the free-trial credit consumption.\n"
+    },
+    {
+      "author": "StevenLKLiu-cl",
+      "pr_number": 1743,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30338994750",
+      "title": "[What] - Add a feature documentation set under docs/features covering seven shipped feature areas",
+      "outcome": "skipped",
+      "commit_message": null,
+      "review_markdown": "The changes add documentation only, and I did not find broken links or actionable inaccuracies that would break existing code or tests.\n"
+    },
+    {
+      "author": "StolasIn-cl",
+      "pr_number": 1744,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30339809472",
+      "title": "[What] fix(ci): repair case-conflicting refs before checkout",
+      "outcome": "skipped",
+      "commit_message": null,
+      "review_markdown": "The changes add a pre-checkout cleanup step for case-conflicting remote refs across the affected workflows. I did not identify a discrete regression or blocking issue introduced by this patch.\n"
+    },
+    {
+      "author": "YihsuanHsueh-cl",
+      "pr_number": 1745,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30340037749",
+      "title": "Fix eBug:PRP265527-0001",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "I did not identify any discrete, actionable regressions introduced by these changes. The crop result/ratio persistence updates appear consistent across controller state, dialog initialization, send-time processing, and tests.\n"
+    },
+    {
+      "author": "HenryCHLiu-cl",
+      "pr_number": 1742,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30340263892",
+      "title": "[what] PRP265423-0028 - PMO 8.21 - Video edit by chat (Preview): The …",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "The changes add an opaque backdrop abstraction and apply it consistently to the two renderless texture call sites without an evident regression. No actionable correctness issues were found in the diff.\n"
+    },
+    {
+      "author": "YihsuanHsueh-cl",
+      "pr_number": 1745,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30341786034",
+      "title": "Fix eBug:PRP265527-0001",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "I did not identify any discrete, actionable regressions in the changed crop-dialog/controller logic. The changes appear internally consistent with the new persisted ratio-selection behavior.\n"
+    },
+    {
+      "author": "ElevenLin-cl",
+      "pr_number": 1740,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30335760975",
+      "title": "Match AIPC widget tests against l10n strings instead of hard-coded English text.",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "The changes only update tests to use loaded localization strings instead of English literals, and no discrete functional regression was found in the diff.\n"
+    },
+    {
+      "author": "WayneXYLin-cl",
+      "pr_number": 1746,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30344506870",
+      "title": "Fix eBug:PRP265527-0017",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "No discrete regressions were identified in the changed files. The close button refactor and associated tests appear consistent with the intended styling change.\n"
+    },
+    {
+      "author": "AngusHung-cl",
+      "pr_number": 1747,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30346211882",
+      "title": "[What] [Adaptor] Revert the debug stubs wrongly committed into three FFI adaptors (ces_geometry_adaptor / ces_gradient_adaptor / motion_graphic_title_adaptor)",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "The patch adds imports from packages that are not declared as direct dependencies in the modified plugin packages. This can break package-level pub resolution, analysis, tests, or independent consumption.\n\nFull review comments:\n\n- [P1] Declare native_utility_ffi in ces_geometry_ffi — C:\\actions-runner\\_work\\promeo-pc-promeo\\promeo-pc-promeo\\promeo_trunk\\lib\\packages\\ces_geometry_ffi\\lib\\ces_geometry_adaptor.dart:10-10\n  When `ces_geometry_ffi` is analyzed, tested, or consumed as its own package, this new package import is not resolvable because `lib/packages/ces_geometry_ffi/pubspec.yaml` does not declare `native_utility_ffi`; only the root app does. Add the same path dependency pattern used by `ces_title_ffi` or keep this package from importing it directly.\n\n- [P1] Declare raw_image_provider in ces_gradient_ffi — C:\\actions-runner\\_work\\promeo-pc-promeo\\promeo-pc-promeo\\promeo_trunk\\lib\\packages\\ces_gradient_ffi\\lib\\ces_gradient_adaptor.dart:10-10\n  When `ces_gradient_ffi` is run as a package, this import cannot be resolved because its pubspec still has `raw_image_provider` commented out. The root app may have it transitively, but package-level `flutter pub get`/analyze/test will fail until this package declares the path dependency directly.\n\n- [P1] Declare native_utility_ffi in motion_graphic_title_ffi — C:\\actions-runner\\_work\\promeo-pc-promeo\\promeo-pc-promeo\\promeo_trunk\\lib\\packages\\motion_graphic_title_ffi\\lib\\motion_graphic_title_adaptor.dart:8-8\n  When `motion_graphic_title_ffi` is analyzed, tested, or consumed independently, this new import is not available because its pubspec does not list `native_utility_ffi`. Add a direct path dependency as with the other FFI package that already calls `ensureFontRegistered`, otherwise package-level builds fail.\n"
+    },
+    {
+      "author": "HenryCHLiu-cl",
+      "pr_number": 1748,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30347729816",
+      "title": "[What] PRP265423-0033 - PMO 8.21 - Video Edit by Chat: Result thumbna…",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "The change is narrowly scoped, preserves the legacy path for non-opt-in thumbnail usages, and adds targeted tests covering the new physical-pixel decode sizing and production wiring. I did not identify any discrete regression introduced by the diff.\n"
+    },
+    {
+      "author": "AngusHung-cl",
+      "pr_number": 1749,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30348370139",
+      "title": "[ImageToVideo] eBug: PRP265523-0037 PMO 8.22 - Video Editor: When adding an \"AI Product Video Shoots\" object from the notification panel, the Video Editor stays on the import page.",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "The change cleanly routes image-to-video add-to-design through the scratch-video landing path when applicable, with tests covering the new routing seams. I did not identify a discrete regression introduced by this patch.\n"
+    },
+    {
+      "author": "AngusHung-cl",
+      "pr_number": 1750,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30348938352",
+      "title": "[DesignStudio] eBug: PRP265425-0009 PMO 8.21 - AI Design Studio: View Result notification bypasses leave confirmation during text extraction",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "The extraction leave guard is invoked before notification navigation and aborts the flow when declined. The new production and test gateway implementations are consistent with the existing back-button cancellation behavior.\n"
+    },
+    {
+      "author": "AndrewLiang-cl",
+      "pr_number": 1738,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30349300259",
+      "title": "eBug: PRP265513-0064 Basic Text auto-wrap on overflow",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "The new free-trial and cancellation flows can respectively consume a trial without a generation and apply stale extraction results after cancellation.\n\nFull review comments:\n\n- [P1] Defer the free-trial claim until generation can start — C:\\actions-runner\\_work\\promeo-pc-promeo\\promeo-pc-promeo\\promeo_trunk\\lib\\src\\controller\\video_edit_by_chat\\video_edit_by_chat_view_controller.dart:2642-2642\n  When a free-trial send needs deferred inspiration materialization, transcoding, trimming, or request construction, both send wrappers claim the remote bonus before `_runGenerationFromInputs` performs that work. If any of those steps fails, the flow only shows a failed bubble but the limited trial has already been permanently consumed without creating a task; claim it after those pre-generation steps succeed.\n\n- [P2] Recheck cancellation before applying decomposition output — C:\\actions-runner\\_work\\promeo-pc-promeo\\promeo-pc-promeo\\promeo_trunk\\lib\\src\\controller\\magic_designer\\ai_design_studio\\ai_design_studio_controller.dart:2309-2309\n  If the user leaves after `_doImageDecomposition` returns but while the subsequent JSON read or layout work is in progress, this flow has no further version/cancellation check before `_applyAiTextLiftResultAtomically` mutates the project. `cancelExtraction` has already released the busy state and navigation guard, so this stale continuation can still alter the project after the user has left; add checks after the result/read awaits and immediately before applying (and do the same in the deferred edit-view path).\n"
+    },
+    {
+      "author": "ElevenLin-cl",
+      "pr_number": 1751,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30349396096",
+      "title": "Fix eBug: PRP265527-0012 PMO 8.22 - General(AIPC): AIPC string is missing space in Preference and Overview and launcher mode.",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "The changes consistently replace duplicated option label objects with ProcessingMode values and derive labels from the existing compute-option enums. I did not identify a discrete regression in the modified production code or added tests.\n"
+    },
+    {
+      "author": "LeonTsai-cl",
+      "pr_number": 1701,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30350247801",
+      "title": "[What] eBug PRP265012-0012",
+      "outcome": "fail",
+      "commit_message": null,
+      "review_markdown": null
+    },
+    {
+      "author": "HenryCHLiu-cl",
+      "pr_number": 1752,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30349751794",
+      "title": "[what] PRP265527-0013 - PMO 8.22 - AI Product Background(AIPC): Proce…",
+      "outcome": "fail",
+      "commit_message": null,
+      "review_markdown": null
+    },
+    {
+      "author": "AndrewLiang-cl",
+      "pr_number": 1753,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30351345302",
+      "title": "eBug: PMO 8.22 - [UX] AI Banner Maker/AI Event Invitation: Enter key inserts a new line instead of exiting edit box and generating keywords",
+      "outcome": "fail",
+      "commit_message": null,
+      "review_markdown": null
+    },
+    {
+      "author": "AndrewLiang-cl",
+      "pr_number": 1753,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30351569795",
+      "title": "eBug: PMO 8.22 - [UX] AI Banner Maker/AI Event Invitation: Enter key inserts a new line instead of exiting edit box and generating keywords",
+      "outcome": "fail",
+      "commit_message": null,
+      "review_markdown": null
+    },
+    {
+      "author": "ElevenLin-cl",
+      "pr_number": 1754,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30351683623",
+      "title": "Fix eBug: PRP265528-0001 PMO 8.22 - Prefernce(AIPC): Incorrect \"Marketplace Product Image - AI PC Toolkits\" name in AI PC mode Preferences.",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "The added provider watch rebuilds the generating overlay after BrushMaskDisplayView updates its output geometry, and the import prefixing consistently resolves the duplicate provider name without changing behavior. No actionable regressions were identified in the reviewed diff.\n"
+    },
+    {
+      "author": "AndrewLiang-cl",
+      "pr_number": 1755,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30353763111",
+      "title": "eBug: PMO 8.22 - [UX] Promeo Agent: Home page tab resets to Overview after opening an AI Agent notification",
+      "outcome": "fail",
+      "commit_message": null,
+      "review_markdown": null
+    },
+    {
+      "author": "AndrewLiang-cl",
+      "pr_number": 1755,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30353913684",
+      "title": "eBug: PMO 8.22 - [UX] Promeo Agent: Home page tab resets to Overview after opening an AI Agent notification",
+      "outcome": "fail",
+      "commit_message": null,
+      "review_markdown": null
+    },
+    {
+      "author": "StolasIn-cl",
+      "pr_number": 1756,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30356562591",
+      "title": "[What] Fix no-line coverage summary and PowerShell script encoding",
+      "outcome": "skipped",
+      "commit_message": null,
+      "review_markdown": "The zero-line diff-cover report is correctly classified as not applicable, matching existing total-coverage semantics. The added regression coverage passes, and BOM additions are valid under Windows PowerShell.\n"
+    },
+    {
+      "author": "WayneXYLin-cl",
+      "pr_number": 1757,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30364707094",
+      "title": "Update Video editor UI",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "The new shared scroll view loses its position and leaks caller-owned controllers whenever the prompt page rebuilds.\n\nReview comment:\n\n- [P2] Retain the prompt scroll controller across rebuilds — C:\\actions-runner\\_work\\promeo-pc-promeo\\promeo-pc-promeo\\promeo_trunk\\lib\\src\\view\\video_edit_by_chat\\video_edit_by_chat_view.dart:124-124\n  When `_PromptPage` rebuilds (notably after the DPR change this patch explicitly supports), this creates a new controller, so `SingleChildScrollView` detaches from the old one and returns to offset 0. The old caller-owned controller is also never disposed. Store the controller in a stateful widget (and dispose it) so moving monitors or inherited-widget rebuilds preserves the user's position.\n"
+    },
+    {
+      "author": "WayneXYLin-cl",
+      "pr_number": 1758,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30368413085",
+      "title": "Fix issue: Showing wrong caption bar clicking back/home button from image designer.",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "Home navigation can now leave previously entered feature controllers active when more than one feature was entered.\n\nReview comment:\n\n- [P1] Tear down every entered feature controller — C:\\actions-runner\\_work\\promeo-pc-promeo\\promeo-pc-promeo\\promeo_trunk\\lib\\src\\controller\\main_page_navigtion_option_controller.dart:109-111\n  When a notification opens (for example) AI Try-On while Photo Editor is still entered, both controllers can have `hasEnter == true` because each feature's `startPage` enters itself without necessarily leaving the previous feature. The prior Home-navigation path explicitly called `leaveView()` for every entered Photo Editor/Try-On/Product-on-Model controller, but this resolver returns only the current controller (or the first fallback), so the other feature retains its `hasEnter`, page controller, and edit state after navigating Home. Keep the current controller preference if needed, but also clean up all other entered controllers.\n"
+    }
+  ],
+  "rebuild_failures": []
+}

@@ -284,9 +284,18 @@ Compute from the data file:
 - `SKIP_COUNT`  = count of prs where summary.outcome == "skipped"
 - Subject line: `PR Daily Report — <DATE> (<PR_COUNT> PRs, <FAIL_COUNT> failed)`
 
+### 5.0 Chrome and attachment preflight (required)
+
+Use the user's **Chrome** profile for Outlook so its existing Microsoft sign-in can be reused. Do not assume the in-app browser is signed in.
+
+- Before opening or composing in Outlook, confirm that the ChatGPT Chrome Extension is reachable. If it is unavailable, wait 2 seconds and retry once. If it is still unavailable, stop and report the browser-connection problem; do not create an email and do not write `run-status.json`.
+- Open Outlook using the user-provided Chrome bookmark when available, or navigate to `https://outlook.office.com` in the same Chrome profile. If the page shows a Microsoft sign-in screen, stop and ask the user to sign in in Chrome; do not switch browsers.
+- Do **not** navigate to `chrome://extensions` or any other Chrome-internal settings page. Browser control may block internal URLs, and that block does not mean the **Allow access to file URLs** setting is disabled.
+- Verify file-URL access only through the normal attachment flow in Step 5e: a general attachment chooser that accepts the local PDF is the success signal. If the chooser is blocked or the upload fails, stop immediately without sending or writing `run-status.json`. Tell the user to manually check **Extensions → Manage Extensions → ChatGPT Chrome Extension → Details → Allow access to file URLs**, then rerun the task. Do not retry by attaching an image-only input or by using a native file picker.
+
 ### 5a. Open Outlook Web
 
-Use `tabs_context_mcp` then `navigate` to open **https://outlook.office.com** (or reuse an existing tab). Take a screenshot to confirm it loaded.
+Use the Chrome browser-control workflow from Step 5.0 to open **https://outlook.office.com** (or reuse the matching Chrome tab). Take a screenshot to confirm it loaded and is already signed in before composing.
 
 ### 5b. Open a new compose window
 
@@ -313,20 +322,19 @@ Full report attached as PDF.
 
 ### 5e. Attach the PDF
 
-Use the `find` tool to locate the file input element in the compose window:
-- Search for: `file input` or `attachment input`
+Confirm `PDF_FILE` exists and has a non-zero size before opening the chooser. Use the browser's file-chooser flow with the visible **Attach file / 附加檔案** control, then select the local PDF path. This lets Outlook choose its active compose control and avoids stale or duplicate file inputs.
 
-Outlook Web has **multiple file inputs** — one is image-only (`accept="image/*"`), the others are for general file attachments (`accept=""`). Use the JavaScript tool to identify the correct one before uploading:
+Outlook Web has **multiple file inputs** — one is image-only (`accept="image/*"`), while general attachment inputs have an empty or missing `accept` attribute. Inspect them before any fallback attempt:
 
 ```javascript
 Array.from(document.querySelectorAll('input[type="file"]')).map((el, i) => ({ index: i, accept: el.accept }))
 ```
 
-Pick a ref whose `accept` is empty (not `"image/*"`). Then call `file_upload` with:
-- `paths`: the Windows path to the PDF — `{{PDF_PATH_WINDOWS}}`
-- `ref`: the correct file input ref (with `accept: ""`)
+Never upload through the `accept="image/*"` input. If the general attachment control cannot open a chooser or the upload reports an error, stop and give the manual file-URL permission remediation from Step 5.0 rather than guessing among duplicate inputs.
 
-Take a screenshot to confirm the attachment chip appeared in the compose window before sending.
+Upload `{{PDF_PATH_WINDOWS}}`, then wait for the attachment chip to show its filename.
+
+Take a screenshot to confirm the attachment chip appeared in the compose window before sending. If it does not appear, stop; do not send and do not write `run-status.json`.
 
 ### 5f. Send
 
