@@ -1,8 +1,8 @@
 @echo off
 :: ============================================================
-:: run_cleanup.bat - Windows Task Scheduler, 08:30 every day
-:: Removes pr-runs/ date dirs older than 2 days from the
-:: data/test-mapping branch. Keeps today + yesterday visible.
+:: run_cleanup.bat - Windows Task Scheduler, 10:30, Tuesday-Saturday
+:: Removes pr-runs/ date dirs older than 7 days from the
+:: data/test-mapping branch. Keeps the last week visible.
 :: Log -> Nightly-PR-Report\cleanup.log
 :: ============================================================
 setlocal
@@ -16,7 +16,7 @@ echo [%DATE% %TIME%] run_cleanup START >> "%LOG%"
 echo. >> "%LOG%"
 
 cd /d "%NR_DIR%"
-python scripts\remove_nightly_report_data.py --keep-days 2 >> "%LOG%" 2>&1
+python scripts\remove_nightly_report_data.py --keep-days 7 >> "%LOG%" 2>&1
 set "EC=%ERRORLEVEL%"
 
 echo. >> "%LOG%"

@@ -1,6 +1,6 @@
 # Nightly PR Report
 
-每天早上自動從 `data/test-mapping` branch 收集 PR 資料，透過 Cowork + Claude in Chrome 產生 PDF 報告並寄送到 Outlook。
+週二至週六早上自動從 `data/test-mapping` branch 收集前一天的 PR 資料，透過 Cowork + Claude in Chrome 產生 PDF 報告並寄送到 Outlook（涵蓋週一至週五的 PR 活動；週日、週一不執行）。
 
 這個 repo 現在採用「**可提交的模板 repo** + **本機產生的設定檔**」模式：
 
@@ -12,24 +12,26 @@
 
 ## 流程概觀
 
+以下時間均只在**週二至週六**執行（週日、週一不執行，因為報告涵蓋的是週一至週五的 PR 活動）：
+
 ```text
-07:00  Windows Task Scheduler
+09:00  Windows Task Scheduler
        -> scripts\run_fetch.bat
           -> scripts\get_nightly_report_data.py
              -> git fetch data/test-mapping
              -> 輸出 nightly-report-data.json
 
-08:00  Cowork Scheduled Task
+10:00  Cowork Scheduled Task
        -> 讀取 SKILL.local.md
        -> 產生 nightly-report.html
        -> 產生 nightly-report.pdf
        -> 開 Outlook Web 寄出報告
        -> 寫入 run-status.json
 
-08:30  Windows Task Scheduler
+10:30  Windows Task Scheduler
        -> scripts\run_cleanup.bat
           -> scripts\remove_nightly_report_data.py
-             -> 清掉 data branch 上超過保留天數的 pr-runs/
+             -> 清掉 data branch 上超過保留天數（預設 7 天）的 pr-runs/
 ```
 
 ---
@@ -174,7 +176,7 @@ git fetch origin data/test-mapping
 
 ### Step 3 - 註冊 Windows Task Scheduler
 
-請用系統管理員 PowerShell：
+請用系統管理員 PowerShell（預設會註冊為週二至週六執行，時間為 fetch 09:00 / cleanup 10:30）：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\register_tasks.ps1
@@ -183,8 +185,10 @@ powershell -ExecutionPolicy Bypass -File scripts\register_tasks.ps1
 若要自訂時間：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\register_tasks.ps1 -FetchTime "06:50" -CleanupTime "09:00"
+powershell -ExecutionPolicy Bypass -File scripts\register_tasks.ps1 -FetchTime "08:30" -CleanupTime "11:00"
 ```
+
+> 若是更新既有機器上的排程（例如把時間或保留天數從舊版改過來），重新執行一次 `register_tasks.ps1` 即可覆蓋既有的 `NightlyPR-Fetch` / `NightlyPR-Cleanup` 工作定義。
 
 確認任務存在：
 
@@ -211,7 +215,7 @@ python scripts\refresh_local_skill.py
 
 這會以最新的 `SKILL.md` 重新產生本機 `SKILL.local.md`。之後 Cowork 仍持續指向 `SKILL.local.md`；每次執行報告前，它也會自動重新整理一次，確保流程與已提交的模板同步。
 
-你可以在 Cowork 建立每天 08:00 的排程，內容讀取：
+你可以在 Cowork 建立週二至週六 10:00 的排程（cron: `0 10 * * 2-6`），內容讀取：
 
 ```text
 C:\path\to\Nightly-PR-Report\SKILL.local.md
@@ -344,7 +348,7 @@ git fetch origin data/test-mapping
 先手動試：
 
 ```powershell
-python scripts\remove_nightly_report_data.py --keep-days 2
+python scripts\remove_nightly_report_data.py --keep-days 7
 ```
 
 如果是權限或認證問題，通常也是 git remote / PAT / SSH 設定沒有對齊。

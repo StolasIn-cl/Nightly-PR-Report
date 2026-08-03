@@ -2,19 +2,23 @@
 .SYNOPSIS
     Register NightlyPR-Fetch and NightlyPR-Cleanup as Windows Scheduled Tasks.
     Run once on any new machine. Requires Administrator privileges.
+    Both tasks only fire Tuesday through Saturday, matching the Cowork
+    report task, since the report covers the previous day's PRs and only
+    Monday-Friday activity needs to be reported (Tue = Mon's PRs, ...,
+    Sat = Fri's PRs).
 
 .PARAMETER FetchTime
-    Daily run time for run_fetch.bat (default: 07:00).
+    Tuesday-Saturday run time for run_fetch.bat (default: 09:00).
 
 .PARAMETER CleanupTime
-    Daily run time for run_cleanup.bat (default: 08:30).
+    Tuesday-Saturday run time for run_cleanup.bat (default: 10:30).
 
 .EXAMPLE
     # Default times — run from the Nightly-PR-Report root:
     powershell -ExecutionPolicy Bypass -File scripts\register_tasks.ps1
 
     # Custom times:
-    powershell -ExecutionPolicy Bypass -File scripts\register_tasks.ps1 -FetchTime "06:50" -CleanupTime "09:00"
+    powershell -ExecutionPolicy Bypass -File scripts\register_tasks.ps1 -FetchTime "08:30" -CleanupTime "11:00"
 
 .NOTES
     The bat files (scripts\run_fetch.bat / scripts\run_cleanup.bat) are expected
@@ -22,9 +26,11 @@
     Tasks run as the current logged-in user so git credentials are inherited.
 #>
 param(
-    [string]$FetchTime   = "07:00",
-    [string]$CleanupTime = "08:30"
+    [string]$FetchTime   = "09:45",
+    [string]$CleanupTime = "10:30"
 )
+
+$RunDays = @("Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
 
 $ErrorActionPreference = "Stop"
 
@@ -57,36 +63,36 @@ $fetchAction  = New-ScheduledTaskAction `
     -Execute  "cmd.exe" `
     -Argument "/c `"$FetchBat`""
 
-$fetchTrigger = New-ScheduledTaskTrigger -Daily -At $FetchTime
+$fetchTrigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek $RunDays -At $FetchTime
 
 Register-ScheduledTask `
     -TaskName    "NightlyPR-Fetch" `
-    -Description "Fetch PR data from data/test-mapping branch at $FetchTime for nightly report" `
+    -Description "Fetch PR data from data/test-mapping branch at $FetchTime, Tuesday-Saturday, for nightly report" `
     -Action      $fetchAction `
     -Trigger     $fetchTrigger `
     -Settings    $settings `
     -RunLevel    Highest `
     -Force | Out-Null
 
-Write-Host "[OK] Registered NightlyPR-Fetch   @ $FetchTime"
+Write-Host "[OK] Registered NightlyPR-Fetch   @ $FetchTime (Tue-Sat)"
 
 # ── NightlyPR-Cleanup ────────────────────────────────────────────────────────
 $cleanupAction  = New-ScheduledTaskAction `
     -Execute  "cmd.exe" `
     -Argument "/c `"$CleanupBat`""
 
-$cleanupTrigger = New-ScheduledTaskTrigger -Daily -At $CleanupTime
+$cleanupTrigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek $RunDays -At $CleanupTime
 
 Register-ScheduledTask `
     -TaskName    "NightlyPR-Cleanup" `
-    -Description "Remove stale pr-runs/ dirs older than 2 days at $CleanupTime" `
+    -Description "Remove stale pr-runs/ dirs older than 7 days at $CleanupTime, Tuesday-Saturday" `
     -Action      $cleanupAction `
     -Trigger     $cleanupTrigger `
     -Settings    $settings `
     -RunLevel    Highest `
     -Force | Out-Null
 
-Write-Host "[OK] Registered NightlyPR-Cleanup @ $CleanupTime"
+Write-Host "[OK] Registered NightlyPR-Cleanup @ $CleanupTime (Tue-Sat)"
 
 Write-Host ""
 Write-Host "Done. Open Task Scheduler to verify, or test immediately:"

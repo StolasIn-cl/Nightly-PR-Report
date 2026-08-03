@@ -2,15 +2,15 @@
 """
 remove_nightly_report_data.py
 Remove old pr-runs/ date sub-directories from the data/test-mapping branch.
-Keeps the most recent N days of data (default: 2 = today + yesterday) so that
-the previous day's PR data remains visible until the next cleanup.
+Keeps the most recent N days of data (default: 7 = the last week) so that
+the past week's PR data remains visible until the next cleanup.
 Uses worktree + retry + rebase-push pattern.
 
 Usage:
     python3 remove_nightly_report_data.py [--date YYYY-MM-DD] [--keep-days N] [--data-branch BRANCH]
 
 Examples:
-    python3 remove_nightly_report_data.py              # keep last 2 days
+    python3 remove_nightly_report_data.py              # keep last 7 days
     python3 remove_nightly_report_data.py --keep-days 1  # keep only today
 """
 
@@ -39,8 +39,8 @@ def git(args, cwd, capture=True):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--date",        default="", help="YYYY-MM-DD (for commit msg only)")
-    parser.add_argument("--keep-days",   type=int, default=2,
-                        help="Keep the most recent N days of data (default: 2)")
+    parser.add_argument("--keep-days",   type=int, default=7,
+                        help="Keep the most recent N days of data (default: 7)")
     parser.add_argument("--data-branch", default="data/test-mapping")
     args = parser.parse_args()
 

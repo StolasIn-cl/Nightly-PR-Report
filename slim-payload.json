@@ -1,0 +1,50 @@
+{
+  "prs": [
+    {
+      "author": "ElevenLin-cl",
+      "pr_number": 1843,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30646067973",
+      "title": "Fix eBug: PRP265530-0014 PMO 8.22 - General(AIPC): CTA button change to Generate More with Credit incorrectly if switching mode from AIPC to Full Features in AI MKT Post/Event Invitation/Banner Maker",
+      "outcome": "fail",
+      "commit_message": null,
+      "review_markdown": null
+    },
+    {
+      "author": "ElevenLin-cl",
+      "pr_number": 1844,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30651841590",
+      "title": "Restore the AIPC Toolkits left-nav entry on AMD only",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "The new AIPC Toolkits visibility gate is internally consistent with the existing AIPC mode policy and the updated tests cover the intended full-mode/AMD-only behavior. I did not find a discrete regression introduced by this diff.\n"
+    },
+    {
+      "author": "HenryCHLiu-cl",
+      "pr_number": 1845,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30670909199",
+      "title": "PRP265530-0037 - PMO 8.22 - AI Image Generator(AIPC): Cannot generate TTI successfully but nothing displayed after processing",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "The change narrows `TTICreationInfo.isEmpty` to image availability, which matches the surrounding UI logic and fixes the blank-metadata regression without introducing a new functional break. The added static file-existence helper preserves the previous path-normalization behavior while avoiding unnecessary FFI initialization.\n"
+    },
+    {
+      "author": "LeonTsai-cl",
+      "pr_number": 1836,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30677194543",
+      "title": "[What] eBug:PRP265530-0039 ",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "The change is consistent with the AIPC single-image flow: it suppresses the count badge where it no longer applies and centers the lone thumbnail without affecting the existing limit enforcement. I did not find any discrete regressions introduced by the patch.\n"
+    },
+    {
+      "author": "LeonTsai-cl",
+      "pr_number": 1846,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/30677519797",
+      "title": "[What] eBug:PRP265530-0053",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "The diff is consistent with the AIPC single-image UX update and the button-style adjustment, and I didn’t find any discrete regression that would break existing behavior. The new tests also cover the intended layout and visibility changes.\n"
+    }
+  ],
+  "rebuild_failures": []
+}

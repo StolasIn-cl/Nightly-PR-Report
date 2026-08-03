@@ -1,6 +1,6 @@
 ---
 name: nightly-pr-report
-description: 每天早上 8 點從 data/test-mapping branch 收集 PR 資料，產生 PDF 報告並以附件寄給本機 recipients.json 中的收件者
+description: 週二至週六早上 10 點從 data/test-mapping branch 收集前一天的 PR 資料，產生 PDF 報告並以附件寄給本機 recipients.json 中的收件者（涵蓋週一至週五的 PR 活動）
 ---
 
 You are executing the nightly PR report for the promeo project.
@@ -53,7 +53,7 @@ After the command succeeds, re-read the current `SKILL.local.md` and continue at
 
 ## Step 1 — Read pre-fetched data
 
-The file at `$DATA_FILE` is written by `run_fetch.bat` (Windows Task Scheduler, 07:00 AM) before this task runs.
+The file at `$DATA_FILE` is written by `run_fetch.bat` (Windows Task Scheduler, 09:00 AM, Tuesday-Saturday) before this task runs.
 
 ```bash
 # Verify the file exists and covers yesterday (run_fetch.bat collects the previous day's PRs)
@@ -398,4 +398,4 @@ PYEOF
 - **Do not fabricate risk findings.** Only surface what `review_markdown` explicitly flags as high-risk or dangerous. When in doubt, omit.
 - **Null-safe.** `review_markdown`, `head_commit_message` may be null. Handle gracefully; never crash.
 - If Outlook Web is unreachable or PDF attachment fails, stop. Do NOT write run-status.json.
-- **Branch cleanup is NOT done here.** `run_cleanup.bat` (Windows Task Scheduler, 08:30) handles removing old pr-runs/ dirs from the data branch.
+- **Branch cleanup is NOT done here.** `run_cleanup.bat` (Windows Task Scheduler, 10:30, Tuesday-Saturday) handles removing pr-runs/ dirs older than 7 days from the data branch.
