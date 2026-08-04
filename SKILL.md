@@ -121,7 +121,7 @@ for pr in data.get('prs', []):
         'review_markdown': pr.get('review_markdown') or None,
     })
 
-rft = data.get('rebuild_failed_tests') or {}
+rft = data.get('dart_failed_tests') or {}
 rebuild_failures = []
 for t in rft.get('failed_tests', []):
     a = t.get('author') or {}

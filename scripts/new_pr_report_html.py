@@ -311,6 +311,118 @@ def build_coverage_section(summary):
     )
 
 
+COVERAGE_DELTA_ROW_CAP = 30
+
+
+def _coverage_delta_status_chip(status):
+    if status == "new":
+        return (
+            "<span style='background:#e3f2fd;color:#1565c0;border-radius:3px;"
+            "padding:1px 6px;font-size:10px;font-weight:700;margin-left:6px'>NEW</span>"
+        )
+    if status == "removed":
+        return (
+            "<span style='background:#f5f5f5;color:#757575;border-radius:3px;"
+            "padding:1px 6px;font-size:10px;font-weight:700;margin-left:6px'>REMOVED</span>"
+        )
+    return ""
+
+
+def _fmt_pct_or_dash(pct):
+    if pct is None:
+        return "<span style='color:#bdbdbd'>&mdash;</span>"
+    return f"{pct:g}%"
+
+
+def _fmt_pct_delta(delta):
+    if delta is None:
+        return "<span style='color:#bdbdbd'>&mdash;</span>"
+    sign  = "+" if delta >= 0 else ""
+    color = "#2e7d32" if delta >= 0 else "#c62828"
+    return f"<span style='color:{color};font-weight:700'>{sign}{delta:g}pp</span>"
+
+
+def build_coverage_delta_section(delta):
+    """Return the Dart Coverage Delta HTML block (total pp change + a
+    changed-files-only table), or '' if the artifact is missing (first night
+    after rollout, or the previous run had no lcov.info to diff against)."""
+    if not delta:
+        return ""
+
+    files       = delta.get("files") or []
+    total       = delta.get("total") or {}
+    total_delta = total.get("delta_line_pct")
+
+    if not files and total_delta is None:
+        return ""
+
+    total_html = ""
+    if total_delta is not None:
+        total_color = "#2e7d32" if total_delta >= 0 else "#c62828"
+        sign = "+" if total_delta >= 0 else ""
+        total_html = (
+            f"{total.get('current_line_pct', '?')}%"
+            f" <span style='color:{total_color};font-weight:700'>"
+            f"(vs last: {sign}{total_delta:g}pp)</span>"
+        )
+
+    if files:
+        shown = files[:COVERAGE_DELTA_ROW_CAP]
+        TH = (
+            "padding:9px 11px;background:#1565c0;color:#fff;text-align:left;"
+            "font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;"
+            "white-space:nowrap;"
+        )
+        TD = "padding:8px 11px;border-bottom:1px solid #f1f3f4;vertical-align:top;font-size:12px;"
+        trs = []
+        for i, f in enumerate(shown):
+            row_bg   = "#fafafa" if i % 2 == 0 else "#ffffff"
+            path_cell = esc(f.get("path", "")) + _coverage_delta_status_chip(f.get("status"))
+            trs.append(
+                f"<tr style='background:{row_bg}'>"
+                f"<td style='{TD}font-family:monospace;font-size:11px'>{path_cell}</td>"
+                f"<td style='{TD}text-align:right'>{_fmt_pct_or_dash(f.get('previous_pct'))}</td>"
+                f"<td style='{TD}text-align:right'>{_fmt_pct_or_dash(f.get('current_pct'))}</td>"
+                f"<td style='{TD}text-align:right'>{_fmt_pct_delta(f.get('delta_pct'))}</td>"
+                f"</tr>"
+            )
+        rows_html = (
+            f"<table style='border-collapse:collapse;width:100%;font-family:inherit'>"
+            f"<thead><tr>"
+            f"<th style='{TH}'>Source File</th>"
+            f"<th style='{TH}width:90px;text-align:right'>Previous</th>"
+            f"<th style='{TH}width:90px;text-align:right'>Current</th>"
+            f"<th style='{TH}width:80px;text-align:right'>Delta</th>"
+            f"</tr></thead>"
+            f"<tbody>{''.join(trs)}</tbody>"
+            f"</table>"
+        )
+        if len(files) > COVERAGE_DELTA_ROW_CAP:
+            rows_html += (
+                f"<div style='font-size:10px;color:#9e9e9e;font-style:italic;"
+                f"padding:6px 11px'>+{len(files) - COVERAGE_DELTA_ROW_CAP} more</div>"
+            )
+    else:
+        rows_html = (
+            "<div style='font-size:11px;color:#9e9e9e;font-style:italic;padding:6px 11px'>"
+            "No file-level coverage changes.</div>"
+        )
+
+    header = "Dart Coverage Delta"
+    if total_html:
+        header += f" &mdash; {total_html}"
+
+    return (
+        f"\n  <!-- Coverage delta -->\n"
+        f"  <div class=\"section\" style=\"margin-top:14px;border-radius:8px\">\n"
+        f"    <div class=\"section-label\">{header}</div>\n"
+        f"    <div style=\"padding:12px 16px\">\n"
+        f"      {rows_html}\n"
+        f"    </div>\n"
+        f"  </div>"
+    )
+
+
 def build_cpp_failures_section(failures):
     """Return C++ package failures as package/reason rows, or '' if none."""
     if not failures:
@@ -553,6 +665,12 @@ def main():
         coverage_section = ""
 
     try:
+        coverage_delta_section = build_coverage_delta_section(data.get("dart_coverage_delta"))
+    except Exception as e:
+        print(f"WARNING: build_coverage_delta_section failed, omitting section: {e}", file=sys.stderr)
+        coverage_delta_section = ""
+
+    try:
         cpp_failures_section = build_cpp_failures_section(data.get("cpp_failed_tests"))
     except Exception as e:
         print(f"WARNING: build_cpp_failures_section failed, omitting section: {e}", file=sys.stderr)
@@ -761,6 +879,8 @@ def main():
       {footer}
     </div>
   </div>
+
+  {coverage_delta_section}
 
   {timing_section}
 
