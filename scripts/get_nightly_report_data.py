@@ -90,6 +90,19 @@ def main():
         summary = parse_json(git_show(ref, f"{base}/summary.json", git_root))
         review  = git_show(ref, f"{base}/review.md", git_root)
 
+        if summary is None:
+            # No summary.json on the data branch for this commit (e.g. the CI
+            # run's summary write failed or hasn't landed yet). Without a PR
+            # number, author, or run URL there is nothing attributable to
+            # report, so skip it rather than emitting an orphaned entry that
+            # can never be matched in the Author Notes section.
+            print(
+                f"WARNING: skipping {sha} — no summary.json under {base}/ "
+                f"on {data_branch} (orphaned review.md with no attributable PR)",
+                file=sys.stderr,
+            )
+            continue
+
         # Best-effort head commit message (only if commit is reachable locally)
         commit_msg = None
         r2 = git(["log", "-1", "--format=%s%n%n%b", sha], cwd=git_root)
