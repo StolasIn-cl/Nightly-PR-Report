@@ -1,8 +1,8 @@
 @echo off
 :: ============================================================
-:: run_fetch.bat - Windows Task Scheduler, 09:00, Tuesday-Saturday
+:: run_fetch.bat - Windows Task Scheduler, 07:30, Tuesday-Saturday
 :: Fetches PR data from the data/test-mapping branch and writes
-:: nightly-report-data.json for the 10:00 Cowork task to read.
+:: nightly-report-data.json for the 08:00 Codex task to read.
 :: Log -> Nightly-PR-Report\fetch.log
 :: ============================================================
 setlocal

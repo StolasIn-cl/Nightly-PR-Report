@@ -8,10 +8,10 @@
     Sat = Fri's PRs).
 
 .PARAMETER FetchTime
-    Tuesday-Saturday run time for run_fetch.bat (default: 09:00).
+    Tuesday-Saturday run time for run_fetch.bat (default: 07:30).
 
 .PARAMETER CleanupTime
-    Tuesday-Saturday run time for run_cleanup.bat (default: 10:30).
+    Tuesday-Saturday run time for run_cleanup.bat (default: 09:00).
 
 .EXAMPLE
     # Default times — run from the Nightly-PR-Report root:
@@ -26,8 +26,8 @@
     Tasks run as the current logged-in user so git credentials are inherited.
 #>
 param(
-    [string]$FetchTime   = "09:45",
-    [string]$CleanupTime = "10:30"
+    [string]$FetchTime   = "07:30",
+    [string]$CleanupTime = "09:00"
 )
 
 $RunDays = @("Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")

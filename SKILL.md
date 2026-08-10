@@ -53,7 +53,7 @@ After the command succeeds, re-read the current `SKILL.local.md` and continue at
 
 ## Step 1 — Read pre-fetched data
 
-The file at `$DATA_FILE` is written by `run_fetch.bat` (Windows Task Scheduler, 09:00 AM, Tuesday-Saturday) before this task runs.
+The file at `$DATA_FILE` is written by `run_fetch.bat` (Windows Task Scheduler, 07:30 AM, Tuesday-Saturday) before this task runs.
 
 ```bash
 # Verify the file exists and covers yesterday (run_fetch.bat collects the previous day's PRs)
@@ -400,4 +400,4 @@ PYEOF
 - **Do not fabricate risk findings.** Only surface what `review_markdown` explicitly flags as high-risk or dangerous. When in doubt, omit.
 - **Null-safe.** `review_markdown`, `head_commit_message` may be null. Handle gracefully; never crash.
 - If Outlook Web is unreachable or PDF attachment fails, stop. Do NOT write run-status.json.
-- **Branch cleanup is NOT done here.** `run_cleanup.bat` (Windows Task Scheduler, 10:30, Tuesday-Saturday) handles removing pr-runs/ dirs older than 7 days from the data branch.
+- **Branch cleanup is NOT done here.** `run_cleanup.bat` (Windows Task Scheduler, 09:00, Tuesday-Saturday) handles removing pr-runs/ dirs older than 7 days from the data branch.

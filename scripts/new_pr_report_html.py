@@ -58,6 +58,21 @@ def fmt_test_seconds(seconds):
 TIMING_ROW_CAP = 30
 
 
+def _rebuild_total_seconds(metadata):
+    """Return the rebuild total from the current or legacy metadata shape."""
+    if not metadata:
+        return None
+    for key in ("rebuild_cpu_seconds", "rebuild_wall_seconds"):
+        value = metadata.get(key)
+        if value is None or isinstance(value, bool):
+            continue
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            continue
+    return None
+
+
 def _timing_rows(current_timings, previous_timings, direction):
     """Rows (path, prev, curr, delta) where |delta| > 20s, filtered to
     direction='slower' (delta > 0) or direction='faster' (delta < 0), sorted
@@ -127,20 +142,20 @@ def build_timing_section(current, previous):
     curr_timings = current.get("test_timings") or {}
     prev_timings = previous.get("test_timings") or {}
 
-    curr_wall = (current.get("metadata") or {}).get("rebuild_wall_seconds")
-    prev_wall = (previous.get("metadata") or {}).get("rebuild_wall_seconds")
-    wall_html = ""
-    if curr_wall is not None and prev_wall is not None:
-        wall_html = (
-            f"{fmt_duration(curr_wall)}"
+    curr_total = _rebuild_total_seconds(current.get("metadata") or {})
+    prev_total = _rebuild_total_seconds(previous.get("metadata") or {})
+    total_html = ""
+    if curr_total is not None and prev_total is not None:
+        total_html = (
+            f"{fmt_duration(curr_total)}"
             f" <span style='color:#9e9e9e;font-weight:400'>"
-            f"(vs last: {fmt_duration_delta(curr_wall - prev_wall)})</span>"
+            f"(vs last: {fmt_duration_delta(curr_total - prev_total)})</span>"
         )
 
     slower_rows = _timing_rows(curr_timings, prev_timings, "slower")
     faster_rows = _timing_rows(curr_timings, prev_timings, "faster")
 
-    if not slower_rows and not faster_rows and not wall_html:
+    if not slower_rows and not faster_rows and not total_html:
         return ""
 
     slower_html = ""
@@ -163,8 +178,8 @@ def build_timing_section(current, previous):
         )
 
     header = "Nightly Rebuild Timing"
-    if wall_html:
-        header += f" &mdash; {wall_html}"
+    if total_html:
+        header += f" &mdash; {total_html}"
 
     return (
         f"\n  <!-- Timing changes -->\n"

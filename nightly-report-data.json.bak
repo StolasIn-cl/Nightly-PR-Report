@@ -3872,7 +3872,7 @@
       "generated_at": "2026-08-05T04:14:09Z",
       "commit": "7dfe11299136b553959626318c62180a85c5a67a",
       "test_count": 1010,
-      "rebuild_wall_seconds": 22565.58
+      "rebuild_cpu_seconds": 22565.58
     },
     "test_timings": {
       "test/agent_studio/agent_260717_bundle_test.dart": 81.35,
@@ -4891,7 +4891,7 @@
       "generated_at": "2026-08-04T07:08:39Z",
       "commit": "a7758fe3d783311455f8e880ecce04241f6bf11a",
       "test_count": 984,
-      "rebuild_wall_seconds": 21365.36
+      "rebuild_cpu_seconds": 21365.36
     },
     "test_timings": {
       "test/agent_studio/agent_260717_bundle_test.dart": 84.28,

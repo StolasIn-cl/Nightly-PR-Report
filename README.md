@@ -15,20 +15,20 @@
 以下時間均只在**週二至週六**執行（週日、週一不執行，因為報告涵蓋的是週一至週五的 PR 活動）：
 
 ```text
-09:00  Windows Task Scheduler
+07:30  Windows Task Scheduler
        -> scripts\run_fetch.bat
           -> scripts\get_nightly_report_data.py
              -> git fetch data/test-mapping
              -> 輸出 nightly-report-data.json
 
-10:00  Cowork Scheduled Task
+08:00  Codex Scheduled Task
        -> 讀取 SKILL.local.md
        -> 產生 nightly-report.html
        -> 產生 nightly-report.pdf
        -> 開 Outlook Web 寄出報告
        -> 寫入 run-status.json
 
-10:30  Windows Task Scheduler
+09:00  Windows Task Scheduler
        -> scripts\run_cleanup.bat
           -> scripts\remove_nightly_report_data.py
              -> 清掉 data branch 上超過保留天數（預設 7 天）的 pr-runs/
@@ -176,7 +176,7 @@ git fetch origin data/test-mapping
 
 ### Step 3 - 註冊 Windows Task Scheduler
 
-請用系統管理員 PowerShell（預設會註冊為週二至週六執行，時間為 fetch 09:00 / cleanup 10:30）：
+請用系統管理員 PowerShell（預設會註冊為週二至週六執行，時間為 fetch 07:30 / cleanup 09:00）：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\register_tasks.ps1
@@ -197,15 +197,15 @@ Get-ScheduledTask -TaskName "NightlyPR-Fetch"
 Get-ScheduledTask -TaskName "NightlyPR-Cleanup"
 ```
 
-### Step 4 - 在 Cowork 連結資料夾
+### Step 4 - 在 Codex 開啟專案
 
-1. 開啟 Cowork
+1. 開啟 Codex
 2. 連結 `Nightly-PR-Report` 資料夾
 3. 確認側欄能看到這個資料夾
 
-### Step 5 - 建立 Cowork Scheduled Task
+### Step 5 - 建立 Codex Scheduled Task
 
-請注意：**Cowork 應使用 `SKILL.local.md`，不是 `SKILL.md`。**
+請注意：**Codex 應使用 `SKILL.local.md`，不是 `SKILL.md`。**
 
 每次更新 repo 後，先在 repo 根目錄手動執行一次：
 
@@ -213,15 +213,15 @@ Get-ScheduledTask -TaskName "NightlyPR-Cleanup"
 python scripts\refresh_local_skill.py
 ```
 
-這會以最新的 `SKILL.md` 重新產生本機 `SKILL.local.md`。之後 Cowork 仍持續指向 `SKILL.local.md`；每次執行報告前，它也會自動重新整理一次，確保流程與已提交的模板同步。
+這會以最新的 `SKILL.md` 重新產生本機 `SKILL.local.md`。之後 Codex 仍持續指向 `SKILL.local.md`；每次執行報告前，它也會自動重新整理一次，確保流程與已提交的模板同步。
 
-你可以在 Cowork 建立週二至週六 10:00 的排程（cron: `0 10 * * 2-6`），內容讀取：
+你可以在 Codex 建立週二至週六 08:00 的排程，內容讀取：
 
 ```text
 C:\path\to\Nightly-PR-Report\SKILL.local.md
 ```
 
-建議第一次先手動 `Run now`，讓 Cowork / Claude in Chrome 把權限授權完。
+建議第一次先手動 `Run now`，讓 Codex / Chrome 把權限授權完。
 
 ---
 

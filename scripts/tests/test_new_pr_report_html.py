@@ -31,7 +31,7 @@ class DurationFormattingTests(unittest.TestCase):
 class TimingSectionTests(unittest.TestCase):
     def setUp(self):
         self.previous = {
-            "metadata": {"rebuild_wall_seconds": 10000},
+            "metadata": {"rebuild_cpu_seconds": 10000},
             "test_timings": {
                 "test/a_test.dart": 100.0,
                 "test/b_test.dart": 50.0,
@@ -40,7 +40,7 @@ class TimingSectionTests(unittest.TestCase):
             },
         }
         self.current = {
-            "metadata": {"rebuild_wall_seconds": 10720},
+            "metadata": {"rebuild_cpu_seconds": 10720},
             "test_timings": {
                 "test/a_test.dart": 100.0,        # unchanged -> excluded
                 "test/b_test.dart": 50.0 + 20.01,  # +20.01s -> slower
@@ -49,6 +49,13 @@ class TimingSectionTests(unittest.TestCase):
             },
         }
 
+    def test_legacy_wall_seconds_metadata_still_renders(self):
+        current = {"metadata": {"rebuild_wall_seconds": 600}, "test_timings": {}}
+        previous = {"metadata": {"rebuild_wall_seconds": 480}, "test_timings": {}}
+        html = rpt.build_timing_section(current, previous)
+        self.assertIn("Nightly Rebuild Timing", html)
+        self.assertIn("+2m 00s", html)
+
     def test_missing_previous_returns_empty(self):
         self.assertEqual(rpt.build_timing_section(self.current, None), "")
 
@@ -56,14 +63,14 @@ class TimingSectionTests(unittest.TestCase):
         self.assertEqual(rpt.build_timing_section(None, self.previous), "")
 
     def test_exact_20_second_delta_excluded(self):
-        current = {"metadata": {"rebuild_wall_seconds": 100}, "test_timings": {"test/x_test.dart": 40.0}}
-        previous = {"metadata": {"rebuild_wall_seconds": 100}, "test_timings": {"test/x_test.dart": 20.0}}
+        current = {"metadata": {"rebuild_cpu_seconds": 100}, "test_timings": {"test/x_test.dart": 40.0}}
+        previous = {"metadata": {"rebuild_cpu_seconds": 100}, "test_timings": {"test/x_test.dart": 20.0}}
         html = rpt.build_timing_section(current, previous)
         self.assertNotIn("x_test.dart", html)
 
     def test_20_01_second_delta_included(self):
-        current = {"metadata": {"rebuild_wall_seconds": 100}, "test_timings": {"test/x_test.dart": 40.01}}
-        previous = {"metadata": {"rebuild_wall_seconds": 100}, "test_timings": {"test/x_test.dart": 20.0}}
+        current = {"metadata": {"rebuild_cpu_seconds": 100}, "test_timings": {"test/x_test.dart": 40.01}}
+        previous = {"metadata": {"rebuild_cpu_seconds": 100}, "test_timings": {"test/x_test.dart": 20.0}}
         html = rpt.build_timing_section(current, previous)
         self.assertIn("x_test.dart", html)
 
@@ -89,8 +96,8 @@ class TimingSectionTests(unittest.TestCase):
         self.assertIn("+12m", html)  # 10720 - 10000 = 720s = 12m
 
     def test_row_cap_shows_more_indicator(self):
-        current = {"metadata": {"rebuild_wall_seconds": 100}, "test_timings": {}}
-        previous = {"metadata": {"rebuild_wall_seconds": 100}, "test_timings": {}}
+        current = {"metadata": {"rebuild_cpu_seconds": 100}, "test_timings": {}}
+        previous = {"metadata": {"rebuild_cpu_seconds": 100}, "test_timings": {}}
         for i in range(35):
             key = f"test/slow_{i}_test.dart"
             previous["test_timings"][key] = 10.0
@@ -260,7 +267,7 @@ class MalformedTimingDataDoesNotCrashReportTests(unittest.TestCase):
             "prs": [],
             "pr_count": 0,
             "dart_test_timings": {
-                "metadata": {"rebuild_wall_seconds": 10720},
+                "metadata": {"rebuild_cpu_seconds": 10720},
                 "test_timings": {
                     # Malformed: a string instead of a number. This makes
                     # `curr - prev` inside _timing_rows raise TypeError.
@@ -268,7 +275,7 @@ class MalformedTimingDataDoesNotCrashReportTests(unittest.TestCase):
                 },
             },
             "dart_test_timings_previous": {
-                "metadata": {"rebuild_wall_seconds": 10000},
+                "metadata": {"rebuild_cpu_seconds": 10000},
                 "test_timings": {
                     "test/a_test.dart": 100.0,
                 },

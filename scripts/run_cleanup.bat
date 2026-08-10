@@ -1,6 +1,6 @@
 @echo off
 :: ============================================================
-:: run_cleanup.bat - Windows Task Scheduler, 10:30, Tuesday-Saturday
+:: run_cleanup.bat - Windows Task Scheduler, 09:00, Tuesday-Saturday
 :: Removes pr-runs/ date dirs older than 7 days from the
 :: data/test-mapping branch. Keeps the last week visible.
 :: Log -> Nightly-PR-Report\cleanup.log
