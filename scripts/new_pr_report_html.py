@@ -342,6 +342,58 @@ def _fmt_pct_delta(delta):
     return f"<span style='color:{color};font-weight:700'>{sign}{delta:g}pp</span>"
 
 
+def _coverage_delta_groups(files):
+    """Classify file deltas and sort percentage changes by impact."""
+    groups = {"new": [], "increased": [], "decreased": []}
+    for entry in files:
+        delta = entry.get("delta_pct")
+        if entry.get("previous_pct") is None:
+            groups["new"].append(entry)
+        elif delta is not None and delta > 0:
+            groups["increased"].append(entry)
+        elif delta is not None and delta < 0:
+            groups["decreased"].append(entry)
+    groups["increased"].sort(key=lambda entry: entry["delta_pct"], reverse=True)
+    groups["decreased"].sort(key=lambda entry: entry["delta_pct"])
+    return groups
+
+
+def _coverage_delta_table(rows, header_bg):
+    th = (
+        f"padding:9px 11px;background:{header_bg};color:#fff;text-align:left;"
+        "font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;"
+        "white-space:nowrap;"
+    )
+    td = "padding:8px 11px;border-bottom:1px solid #f1f3f4;vertical-align:top;font-size:12px;"
+    shown = rows[:COVERAGE_DELTA_ROW_CAP]
+    trs = []
+    for index, entry in enumerate(shown):
+        row_bg = "#fafafa" if index % 2 == 0 else "#ffffff"
+        path_cell = esc(entry.get("path", "")) + _coverage_delta_status_chip(entry.get("status"))
+        trs.append(
+            f"<tr style='background:{row_bg}'>"
+            f"<td style='{td}font-family:monospace;font-size:11px'>{path_cell}</td>"
+            f"<td style='{td}text-align:right'>{_fmt_pct_or_dash(entry.get('previous_pct'))}</td>"
+            f"<td style='{td}text-align:right'>{_fmt_pct_or_dash(entry.get('current_pct'))}</td>"
+            f"<td style='{td}text-align:right'>{_fmt_pct_delta(entry.get('delta_pct'))}</td>"
+            f"</tr>"
+        )
+    table = (
+        "<table style='border-collapse:collapse;width:100%;font-family:inherit'>"
+        f"<thead><tr><th style='{th}'>Source File</th>"
+        f"<th style='{th}width:90px;text-align:right'>Previous</th>"
+        f"<th style='{th}width:90px;text-align:right'>Current</th>"
+        f"<th style='{th}width:80px;text-align:right'>Delta</th>"
+        f"</tr></thead><tbody>{''.join(trs)}</tbody></table>"
+    )
+    if len(rows) > COVERAGE_DELTA_ROW_CAP:
+        table += (
+            "<div style='font-size:10px;color:#9e9e9e;font-style:italic;"
+            f"padding:6px 11px'>+{len(rows) - COVERAGE_DELTA_ROW_CAP} more</div>"
+        )
+    return table
+
+
 def build_coverage_delta_section(delta):
     """Return the Dart Coverage Delta HTML block (total pp change + a
     changed-files-only table), or '' if the artifact is missing (first night
@@ -366,42 +418,26 @@ def build_coverage_delta_section(delta):
             f"(vs last: {sign}{total_delta:g}pp)</span>"
         )
 
-    if files:
-        shown = files[:COVERAGE_DELTA_ROW_CAP]
-        TH = (
-            "padding:9px 11px;background:#1565c0;color:#fff;text-align:left;"
-            "font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;"
-            "white-space:nowrap;"
+    groups = _coverage_delta_groups(files)
+    group_specs = (
+        ("new", "New", "#1565c0"),
+        ("increased", "Coverage Increased", "#2e7d32"),
+        ("decreased", "Coverage Decreased", "#c62828"),
+    )
+    group_html = []
+    for key, label, color in group_specs:
+        rows = groups[key]
+        if not rows:
+            continue
+        group_html.append(
+            f"<div style='margin-bottom:14px'>"
+            f"<div class='section-label' style='color:{color};padding-left:0;border-bottom:none'>"
+            f"{label} &mdash; {len(rows)} file(s)</div>"
+            f"{_coverage_delta_table(rows, color)}</div>"
         )
-        TD = "padding:8px 11px;border-bottom:1px solid #f1f3f4;vertical-align:top;font-size:12px;"
-        trs = []
-        for i, f in enumerate(shown):
-            row_bg   = "#fafafa" if i % 2 == 0 else "#ffffff"
-            path_cell = esc(f.get("path", "")) + _coverage_delta_status_chip(f.get("status"))
-            trs.append(
-                f"<tr style='background:{row_bg}'>"
-                f"<td style='{TD}font-family:monospace;font-size:11px'>{path_cell}</td>"
-                f"<td style='{TD}text-align:right'>{_fmt_pct_or_dash(f.get('previous_pct'))}</td>"
-                f"<td style='{TD}text-align:right'>{_fmt_pct_or_dash(f.get('current_pct'))}</td>"
-                f"<td style='{TD}text-align:right'>{_fmt_pct_delta(f.get('delta_pct'))}</td>"
-                f"</tr>"
-            )
-        rows_html = (
-            f"<table style='border-collapse:collapse;width:100%;font-family:inherit'>"
-            f"<thead><tr>"
-            f"<th style='{TH}'>Source File</th>"
-            f"<th style='{TH}width:90px;text-align:right'>Previous</th>"
-            f"<th style='{TH}width:90px;text-align:right'>Current</th>"
-            f"<th style='{TH}width:80px;text-align:right'>Delta</th>"
-            f"</tr></thead>"
-            f"<tbody>{''.join(trs)}</tbody>"
-            f"</table>"
-        )
-        if len(files) > COVERAGE_DELTA_ROW_CAP:
-            rows_html += (
-                f"<div style='font-size:10px;color:#9e9e9e;font-style:italic;"
-                f"padding:6px 11px'>+{len(files) - COVERAGE_DELTA_ROW_CAP} more</div>"
-            )
+
+    if group_html:
+        rows_html = "".join(group_html)
     else:
         rows_html = (
             "<div style='font-size:11px;color:#9e9e9e;font-style:italic;padding:6px 11px'>"

@@ -171,7 +171,7 @@ Generate HTML for ALL authors combined using ONLY this structure (modern div-bas
     <div class="pr-entry">
       <div class="pr-link">
         <a href="RUN_URL" style="color:#1565c0;font-weight:700;text-decoration:none">#PR_NUMBER</a>
-        &nbsp;—&nbsp;PR_TITLE
+        &nbsp;&mdash;&nbsp;PR_TITLE
       </div>
       <!-- Repeat this paragraph once per explicit P1/P2 finding. Use priority-p2 for P2. -->
       <p><span class="priority-label priority-p1">P1</span> The review found ...</p>
@@ -199,6 +199,8 @@ Generate HTML for ALL authors combined using ONLY this structure (modern div-bas
 
 Rules:
 - Return ONLY the raw HTML — no markdown fences, no explanation.
+- For the PR-number/title separator, emit exactly `&nbsp;&mdash;&nbsp;` (ASCII HTML entities only). Do not use a raw Unicode dash character.
+- Before returning, verify the separator has not become `??nbsp;`; regenerate the HTML if that malformed literal appears.
 - Do NOT include any pass / fail / skip labels or symbols anywhere in the author notes.
 - HTML-escape all user-sourced strings (PR titles, author names, commit summaries, test file paths).
 - The CSS classes (author-card, author-card-header, pr-entry, etc.) are defined in the report's stylesheet — use them exactly as shown.
@@ -293,7 +295,7 @@ Use the user's **Chrome** profile for Outlook so its existing Microsoft sign-in 
 - Before opening or composing in Outlook, confirm that a browser-control extension is reachable. Whichever agent runs this task, accept either the **ChatGPT Chrome Extension** or **Claude in Chrome** — use whichever one is available and do not require a specific vendor. If neither is available, wait 2 seconds and retry once. If neither is still available, stop and report the browser-connection problem; do not create an email and do not write `run-status.json`.
 - Open Outlook using the user-provided Chrome bookmark when available, or navigate to `https://outlook.office.com` in the same Chrome profile. If the page shows a Microsoft sign-in screen, stop and ask the user to sign in in Chrome; do not switch browsers.
 - Do **not** navigate to `chrome://extensions` or any other Chrome-internal settings page. Browser control may block internal URLs, and that block does not mean the **Allow access to file URLs** setting is disabled.
-- Verify file-URL access only through the normal attachment flow in Step 5e: a general attachment chooser that accepts the local PDF is the success signal. If the chooser is blocked or the upload fails, stop immediately without sending or writing `run-status.json`. Tell the user to manually check **Extensions → Manage Extensions → (ChatGPT Chrome Extension *or* Claude in Chrome, whichever this run used) → Details → Allow access to file URLs**, then rerun the task. Do not retry by attaching an image-only input or by using a native file picker.
+- Verify file-URL access only through the complete attachment flow in Step 5e. The top-level **Attach file / 附加檔案** button opens an Outlook menu; it does not itself open a chooser. A timeout while waiting for a chooser after only clicking that button means the menu opened, not that file-URL access failed. The success signal is a general chooser opened after selecting **Browse this computer / 瀏覽此電腦** from that menu. If that chooser is blocked or the upload fails, stop immediately without sending or writing `run-status.json`. Tell the user to manually check **Extensions → Manage Extensions → (ChatGPT Chrome Extension *or* Claude in Chrome, whichever this run used) → Details → Allow access to file URLs**, then rerun the task. Do not retry by attaching an image-only input or by using a native file picker.
 
 ### 5a. Open Outlook Web
 
@@ -324,7 +326,7 @@ Full report attached as PDF.
 
 ### 5e. Attach the PDF
 
-Confirm `PDF_FILE` exists and has a non-zero size before opening the chooser. Use the browser's file-chooser flow with the visible **Attach file / 附加檔案** control, then select the local PDF path. This lets Outlook choose its active compose control and avoids stale or duplicate file inputs.
+Confirm `PDF_FILE` exists and has a non-zero size. Open the visible **Attach file / 附加檔案** menu, wait for its **Browse this computer / 瀏覽此電腦** menu item, then start the file-chooser wait and click that menu item. Only this second click opens the native chooser. Select the local PDF path from that chooser. This lets Outlook choose its active compose control and avoids stale or duplicate file inputs.
 
 Outlook Web has **multiple file inputs** — one is image-only (`accept="image/*"`), while general attachment inputs have an empty or missing `accept` attribute. Inspect them before any fallback attempt:
 
@@ -332,7 +334,7 @@ Outlook Web has **multiple file inputs** — one is image-only (`accept="image/*
 Array.from(document.querySelectorAll('input[type="file"]')).map((el, i) => ({ index: i, accept: el.accept }))
 ```
 
-Never upload through the `accept="image/*"` input. If the general attachment control cannot open a chooser or the upload reports an error, stop and give the manual file-URL permission remediation from Step 5.0 rather than guessing among duplicate inputs.
+Never upload through the `accept="image/*"` input. Do not treat a chooser timeout after the top-level **Attach file / 附加檔案** click as an error: inspect the opened menu and choose **Browse this computer / 瀏覽此電腦**. If that menu item cannot open a chooser, or the upload reports an error, stop and give the manual file-URL permission remediation from Step 5.0 rather than guessing among duplicate inputs.
 
 Upload `{{PDF_PATH_WINDOWS}}`, then wait for the attachment chip to show its filename.
 

@@ -117,6 +117,47 @@ class CoverageSectionTests(unittest.TestCase):
         self.assertNotIn("0%", html)
 
 
+class CoverageDeltaSectionTests(unittest.TestCase):
+    def test_groups_new_increased_and_decreased_and_omits_unchanged(self):
+        html = rpt.build_coverage_delta_section({
+            "total": {"current_line_pct": 70, "delta_line_pct": 1},
+            "files": [
+                {"path": "lib/new.dart", "status": "new", "previous_pct": None,
+                 "current_pct": 60, "delta_pct": None},
+                {"path": "lib/small_gain.dart", "previous_pct": 70,
+                 "current_pct": 71, "delta_pct": 1},
+                {"path": "lib/large_gain.dart", "previous_pct": 40,
+                 "current_pct": 50, "delta_pct": 10},
+                {"path": "lib/loss.dart", "previous_pct": 90,
+                 "current_pct": 80, "delta_pct": -10},
+                {"path": "lib/unchanged.dart", "previous_pct": 50,
+                 "current_pct": 50, "delta_pct": 0},
+            ],
+        })
+
+        self.assertIn("New &mdash; 1 file(s)", html)
+        self.assertIn("Coverage Increased &mdash; 2 file(s)", html)
+        self.assertIn("Coverage Decreased &mdash; 1 file(s)", html)
+        self.assertLess(html.index("large_gain.dart"), html.index("small_gain.dart"))
+        self.assertNotIn("unchanged.dart", html)
+
+    def test_caps_each_group_independently(self):
+        files = [
+            {"path": f"lib/gain_{index}.dart", "previous_pct": 0,
+             "current_pct": index + 1, "delta_pct": index + 1}
+            for index in range(rpt.COVERAGE_DELTA_ROW_CAP + 1)
+        ]
+        files.append({"path": "lib/loss.dart", "previous_pct": 100,
+                      "current_pct": 99, "delta_pct": -1})
+
+        html = rpt.build_coverage_delta_section({"files": files})
+
+        self.assertIn("Coverage Increased &mdash; 31 file(s)", html)
+        self.assertIn("Coverage Decreased &mdash; 1 file(s)", html)
+        self.assertIn("+1 more", html)
+        self.assertIn("loss.dart", html)
+
+
 class CppFailureSectionTests(unittest.TestCase):
     def test_cpp_failures_show_package_and_reason_without_author(self):
         html = rpt.build_cpp_failures_section({
