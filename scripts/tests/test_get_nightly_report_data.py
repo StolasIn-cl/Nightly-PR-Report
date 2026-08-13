@@ -17,6 +17,7 @@ def fake_git_show(ref, path, git_root):
         "cpp-failed-tests.json": '{"failed_package_count": 1}',
         "dart-test-timings.json": '{"metadata": {"test_count": 2}}',
         "dart-test-timings-previous.json": '{"metadata": {"test_count": 1}}',
+        "quality-metrics-history.json": '{"schema_version": 1, "entries": []}',
     }
     return artifacts.get(path)
 
@@ -29,6 +30,7 @@ class BranchArtifactTests(unittest.TestCase):
         self.assertEqual(artifacts["full_coverage_summary"]["schema_version"], 1)
         self.assertEqual(artifacts["cpp_failed_tests"]["failed_package_count"], 1)
         self.assertEqual(artifacts["dart_test_timings"]["metadata"]["test_count"], 2)
+        self.assertEqual(artifacts["quality_metrics_history"]["schema_version"], 1)
         requested = [call.args[1] for call in show.call_args_list]
         self.assertNotIn("rebuild-failed-tests.json", requested)
         self.assertNotIn("cpp-coverage-failures.json", requested)

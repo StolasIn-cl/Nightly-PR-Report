@@ -474,6 +474,164 @@ def build_coverage_delta_section(delta):
     )
 
 
+def _format_quality_metric(value, suffix=""):
+    """Format quality history values for compact SVG axis and point labels."""
+    if suffix == "%":
+        return f"{value:.2f}%"
+    return f"{int(round(value)):,}"
+
+
+def _quality_metric_points(entries, value_getter):
+    """Return sorted (date, numeric value) pairs from one history metric."""
+    points = []
+    for entry in entries or []:
+        try:
+            value = value_getter(entry)
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                continue
+            date = str(entry.get("date") or "")
+            if not date:
+                continue
+            points.append((date, float(value)))
+        except (AttributeError, KeyError, TypeError, ValueError):
+            continue
+
+    points.sort(key=lambda point: point[0])
+    return points
+
+
+def _build_quality_metric_chart(entries, title, value_getter, suffix=""):
+    """Render one compact PDF-safe sparkline card, or '' when it has no values."""
+    points = _quality_metric_points(entries, value_getter)
+    if not points:
+        return ""
+
+    width, height = 220, 180
+    left, right, top, bottom = 34, 8, 10, 30
+    plot_width = width - left - right
+    plot_height = height - top - bottom
+    values = [value for _, value in points]
+    minimum, maximum = min(values), max(values)
+    padding = max((maximum - minimum) * 0.05, abs(maximum) * 0.02, 0.5)
+    y_min, y_max = minimum - padding, maximum + padding
+
+    def x_pos(index):
+        if len(points) == 1:
+            return left + plot_width / 2
+        return left + plot_width * index / (len(points) - 1)
+
+    def y_pos(value):
+        return top + (y_max - value) * plot_height / (y_max - y_min)
+
+    polyline = " ".join(
+        f"{x_pos(index):.1f},{y_pos(value):.1f}"
+        for index, (_, value) in enumerate(points)
+    )
+    y_ticks = [y_max - (y_max - y_min) * index / 4 for index in range(5)]
+    y_minor_ticks = [
+        y_max - (y_max - y_min) * index / 20
+        for index in range(1, 20)
+        if index % 4
+    ]
+    y_minor_axis = "".join(
+        f"<line data-quality-y-minor='true' x1='{left}' y1='{y_pos(value):.1f}' "
+        f"x2='{width - right}' y2='{y_pos(value):.1f}' stroke='#f3f4f6'/>"
+        for value in y_minor_ticks
+    )
+    y_axis = "".join(
+        f"<line data-quality-y-tick='true' x1='{left}' y1='{y_pos(value):.1f}' "
+        f"x2='{width - right}' y2='{y_pos(value):.1f}' stroke='#e1e5ea'/>"
+        f"<line x1='{left - 3}' y1='{y_pos(value):.1f}' x2='{left}' "
+        f"y2='{y_pos(value):.1f}' stroke='#9e9e9e'/>"
+        f"<text x='{left - 4}' y='{y_pos(value) + 3:.1f}' text-anchor='end' font-size='8' "
+        f"fill='#5f6368'>{esc(_format_quality_metric(value, suffix))}</text>"
+        for value in y_ticks
+    )
+    x_tick_indexes = [0] if len(points) == 1 else [0, len(points) - 1]
+    x_minor_indexes = [] if len(points) == 1 else list(range(1, 5))
+    x_minor_axis = "".join(
+        f"<line data-quality-x-minor='true' x1='{left + plot_width * index / 5:.1f}' "
+        f"y1='{top}' x2='{left + plot_width * index / 5:.1f}' "
+        f"y2='{top + plot_height}' stroke='#f3f4f6'/>"
+        for index in x_minor_indexes
+    )
+    x_axis = "".join(
+        f"<line data-quality-x-tick='true' x1='{x_pos(index):.1f}' y1='{top}' "
+        f"x2='{x_pos(index):.1f}' y2='{top + plot_height}' stroke='#e1e5ea'/>"
+        f"<line x1='{x_pos(index):.1f}' y1='{top + plot_height}' "
+        f"x2='{x_pos(index):.1f}' y2='{top + plot_height + 3}' stroke='#9e9e9e'/>"
+        for index in x_tick_indexes
+    )
+    x_labels = "".join(
+        f"<text data-quality-x-label='true' x='{x_pos(index):.1f}' "
+        f"y='{height - 8}' text-anchor='{('start' if index == 0 else 'end')}' "
+        f"font-size='8' fill='#5f6368'>{esc(points[index][0])}</text>"
+        for index in x_tick_indexes
+    )
+    point_markers = "".join(
+        f"<circle data-quality-point='true' cx='{x_pos(index):.1f}' cy='{y_pos(value):.1f}' "
+        f"r='{'3.5' if index == len(points) - 1 else '2'}' "
+        f"fill='{'#1565c0' if index == len(points) - 1 else '#90a4ae'}'/>"
+        for index, (_, value) in enumerate(points)
+    )
+    current = values[-1]
+    previous = values[-2] if len(values) > 1 else None
+    delta = current - previous if previous is not None else None
+    if delta is None:
+        delta_html = ""
+    elif suffix == "%":
+        delta_html = f" <span style='font-size:11px;color:#2e7d32'>(vs previous: {delta:+.2f}pp)</span>"
+    else:
+        delta_html = f" <span style='font-size:11px;color:#2e7d32'>(vs previous: {delta:+,.0f})</span>"
+
+    return (
+        f"<div style='flex:1;min-width:0;padding:12px 14px;border:1px solid #e0e0e0;"
+        f"border-radius:6px;background:#fafbfc'>"
+        f"<div style='font-size:11px;color:#5f6368;font-weight:700'>{esc(title)}</div>"
+        f"<div style='font-size:19px;font-weight:700;color:#202124;margin:2px 0 6px'>"
+        f"{esc(_format_quality_metric(current, suffix))}{delta_html}</div>"
+        f"<svg viewBox='0 0 {width} {height}' width='100%' height='{height}' role='img' "
+        f"aria-label='{esc(title)} history chart'>"
+        f"{y_minor_axis}{y_axis}{x_minor_axis}{x_axis}{x_labels}"
+        f"<line x1='{left}' y1='{top + plot_height}' x2='{width - right}' "
+        f"y2='{top + plot_height}' stroke='#9e9e9e'/>"
+        f"<line x1='{left}' y1='{top}' x2='{left}' y2='{top + plot_height}' stroke='#9e9e9e'/>"
+        f"<polyline points='{polyline}' fill='none' stroke='#1565c0' stroke-width='2' "
+        f"stroke-linejoin='round' stroke-linecap='round'/>"
+        f"{point_markers}"
+        f"</svg></div>"
+    )
+
+
+def build_quality_metrics_history_section(history):
+    """Return three quality-history charts, or '' when the artifact is empty."""
+    entries = (history or {}).get("entries") or []
+    charts = [
+        _build_quality_metric_chart(
+            entries, "Dart coverage (%)",
+            lambda entry: (entry.get("dart_coverage") or {}).get("percent"), "%",
+        ),
+        _build_quality_metric_chart(
+            entries, "*_test.dart files",
+            lambda entry: entry.get("test_file_count"),
+        ),
+        _build_quality_metric_chart(
+            entries, "Test cases",
+            lambda entry: entry.get("test_case_count"),
+        ),
+    ]
+    charts = [chart for chart in charts if chart]
+    if not charts:
+        return ""
+    return (
+        "\n  <!-- Quality metrics history -->\n"
+        "  <div class=\"section\" style=\"margin-top:14px;border-radius:8px\">\n"
+        "    <div class=\"section-label\">Quality Metrics History</div>\n"
+        f"    <div style=\"padding:12px 16px\"><div style=\"display:flex;gap:10px\">{''.join(charts)}</div></div>\n"
+        "  </div>"
+    )
+
+
 def build_cpp_failures_section(failures):
     """Return C++ package failures as package/reason rows, or '' if none."""
     if not failures:
@@ -722,6 +880,14 @@ def main():
         coverage_delta_section = ""
 
     try:
+        quality_metrics_history_section = build_quality_metrics_history_section(
+            data.get("quality_metrics_history")
+        )
+    except Exception as e:
+        print(f"WARNING: build_quality_metrics_history_section failed, omitting section: {e}", file=sys.stderr)
+        quality_metrics_history_section = ""
+
+    try:
         cpp_failures_section = build_cpp_failures_section(data.get("cpp_failed_tests"))
     except Exception as e:
         print(f"WARNING: build_cpp_failures_section failed, omitting section: {e}", file=sys.stderr)
@@ -805,6 +971,13 @@ def main():
       text-transform: uppercase;
       letter-spacing: .7px;
       border-bottom: 1px solid #f1f3f4;
+    }}
+    .pr-section .section-label {{
+      page-break-after: avoid;
+      break-after: avoid;
+    }}
+    .pr-section thead {{
+      display: table-header-group;
     }}
 
     /* ── Author notes section ── */
@@ -910,8 +1083,10 @@ def main():
 
   {coverage_section}
 
+  {quality_metrics_history_section}
+
   <!-- PR table -->
-  <div class="section">
+  <div class="section pr-section">
     <div class="section-label">Pull Requests &mdash; {pr_count} total</div>
     {pr_table}
   </div>

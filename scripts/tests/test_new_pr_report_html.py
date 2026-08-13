@@ -165,6 +165,64 @@ class CoverageDeltaSectionTests(unittest.TestCase):
         self.assertIn("loss.dart", html)
 
 
+class QualityMetricsHistorySectionTests(unittest.TestCase):
+    def setUp(self):
+        self.history = {
+            "schema_version": 1,
+            "entries": [
+                {
+                    "date": "2026-08-12",
+                    "dart_coverage": {"status": "measured", "percent": 20.86},
+                    "test_file_count": 1464,
+                    "test_case_count": 13268,
+                },
+                {
+                    "date": "2026-08-13",
+                    "dart_coverage": {"status": "measured", "percent": 22.32},
+                    "test_file_count": 1537,
+                    "test_case_count": 13679,
+                },
+            ],
+        }
+
+    def test_renders_three_labeled_sparklines_with_current_values(self):
+        html = rpt.build_quality_metrics_history_section(self.history)
+
+        self.assertIn("Quality Metrics History", html)
+        self.assertEqual(html.count("<svg"), 3)
+        self.assertIn("Dart coverage (%)", html)
+        self.assertIn("*_test.dart files", html)
+        self.assertIn("Test cases", html)
+        self.assertIn("22.32%", html)
+        self.assertIn("1,537", html)
+        self.assertIn("13,679", html)
+
+    def test_omits_section_when_no_entries_exist(self):
+        self.assertEqual(rpt.build_quality_metrics_history_section({"entries": []}), "")
+
+    def test_renders_three_taller_cards_with_x_axis_dates_and_deltas(self):
+        html = rpt.build_quality_metrics_history_section(self.history)
+
+        self.assertIn("display:flex;gap:10px", html)
+        self.assertEqual(html.count("<svg"), 3)
+        self.assertEqual(html.count("data-quality-x-label"), 6)
+        self.assertIn("vs previous: +1.46pp", html)
+        self.assertIn("vs previous: +73", html)
+        self.assertIn("vs previous: +411", html)
+        self.assertIn("height='180'", html)
+        self.assertNotIn("2026-08-12 &rarr; 2026-08-13", html)
+        self.assertEqual(html.count("2026-08-12"), 3)
+
+    def test_renders_compact_axes_for_each_metric_chart(self):
+        html = rpt.build_quality_metrics_history_section(self.history)
+
+        self.assertEqual(html.count("data-quality-y-tick"), 15)
+        self.assertEqual(html.count("data-quality-x-tick"), 6)
+        self.assertEqual(html.count("data-quality-y-minor"), 45)
+        self.assertEqual(html.count("data-quality-x-minor"), 12)
+        self.assertEqual(html.count("data-quality-point"), 6)
+
+
 class CppFailureSectionTests(unittest.TestCase):
     def test_cpp_failures_show_package_and_reason_without_author(self):
         html = rpt.build_cpp_failures_section({

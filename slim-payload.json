@@ -2,78 +2,209 @@
   "prs": [
     {
       "author": "AndrewLiang-cl",
-      "pr_number": 1961,
-      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31288811048",
-      "title": "Remove unused Dart code",
-      "outcome": "pass",
+      "pr_number": 1966,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31322768737",
+      "title": "[Video Toolkits] Centralize video tools and guarded navigation",
+      "outcome": "fail",
       "commit_message": null,
-      "review_markdown": "The deleted Dart files have no remaining source references, and the only edit in display_view removes commented-out code. No actionable regressions were identified in the diff.\n"
+      "review_markdown": null
     },
     {
-      "author": "AndrewLiang-cl",
-      "pr_number": 1963,
-      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31291859837",
-      "title": "[What] Clear Flutter analyzer problems in tests",
-      "outcome": "pass",
+      "author": "StolasIn-cl",
+      "pr_number": 1967,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31347621314",
+      "title": "Feature/parallel testcase runner",
+      "outcome": "fail",
       "commit_message": null,
-      "review_markdown": ""
+      "review_markdown": null
     },
     {
-      "author": "AndrewLiang-cl",
-      "pr_number": 1964,
-      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31293389946",
-      "title": "Restore renderless geometry refresh after async updates",
+      "author": "StolasIn-cl",
+      "pr_number": 1967,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31348435294",
+      "title": "Feature/parallel testcase runner",
       "outcome": "pass",
       "commit_message": null,
-      "review_markdown": ""
+      "review_markdown": null
     },
     {
-      "author": "AndrewLiang-cl",
-      "pr_number": 1962,
-      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31290970411",
-      "title": "[What] Scope the implementation_imports suppression per file and harden two BuildContext guards",
+      "author": "LeonTsai-cl",
+      "pr_number": 1968,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31348216605",
+      "title": "[What] Support importing WebP and bundle the modules that decode it",
+      "outcome": "fail",
+      "commit_message": null,
+      "review_markdown": null
+    },
+    {
+      "author": "LeonTsai-cl",
+      "pr_number": 1968,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31349777084",
+      "title": "[What] Support importing WebP and bundle the modules that decode it",
+      "outcome": "fail",
+      "commit_message": null,
+      "review_markdown": null
+    },
+    {
+      "author": "StolasIn-cl",
+      "pr_number": 1967,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31350579343",
+      "title": "Feature/parallel testcase runner",
+      "outcome": "fail",
+      "commit_message": null,
+      "review_markdown": null
+    },
+    {
+      "author": "AlexanderWang-cl",
+      "pr_number": 1969,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31350333007",
+      "title": "[Video Enhance] Register the busy-bus signal and wire the CEIP events",
+      "outcome": "fail",
+      "commit_message": null,
+      "review_markdown": null
+    },
+    {
+      "author": "StolasIn-cl",
+      "pr_number": 1967,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31350907454",
+      "title": "Feature/parallel testcase runner",
+      "outcome": "fail",
+      "commit_message": null,
+      "review_markdown": null
+    },
+    {
+      "author": "StolasIn-cl",
+      "pr_number": 1967,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31351053759",
+      "title": "Feature/parallel testcase runner",
+      "outcome": "fail",
+      "commit_message": null,
+      "review_markdown": null
+    },
+    {
+      "author": "StolasIn-cl",
+      "pr_number": 1967,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31351270944",
+      "title": "Feature/parallel testcase runner",
+      "outcome": "fail",
+      "commit_message": null,
+      "review_markdown": null
+    },
+    {
+      "author": "StolasIn-cl",
+      "pr_number": 1970,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31351424333",
+      "title": "test: expand TL title and video coverage",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "The changes add focused test coverage only, and the new assertions align with the current production implementations. No actionable regressions were identified.\n"
+    },
+    {
+      "author": "AngusHung-cl",
+      "pr_number": 1971,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31352629683",
+      "title": "[What] [WindowClose] 1. Show the feature-close confirmation dialog when Promeo is closed while an AI generation is still running 2. Keep the caption-bar close button enabled during Product Background and AI Background Blend generation",
+      "outcome": "fail",
+      "commit_message": null,
+      "review_markdown": null
+    },
+    {
+      "author": "StevenLKLiu-cl",
+      "pr_number": 1972,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31352712781",
+      "title": "[What] - Ignore generated Flutter platform artifacts",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": "The changes consistently remove Flutter-generated example artifacts and add ignore rules for their regeneration. The affected platform build files are regenerated by Flutter tooling during dependency resolution.\n"
+    },
+    {
+      "author": "StevenLKLiu-cl",
+      "pr_number": 1973,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31353246785",
+      "title": "[what]: Update doc files",
+      "outcome": "skipped",
+      "commit_message": null,
+      "review_markdown": "`git diff 9ab9ca649d6a98b4b4a16d000abb5a15bd58c54a` produced no changes to review.\n"
+    },
+    {
+      "author": "StolasIn-cl",
+      "pr_number": 1967,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31354252179",
+      "title": "Feature/parallel testcase runner",
       "outcome": "fail",
       "commit_message": null,
       "review_markdown": null
     },
     {
       "author": "AndrewLiang-cl",
-      "pr_number": 1962,
-      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31296189294",
-      "title": "[What] Scope the implementation_imports suppression per file and harden two BuildContext guards",
-      "outcome": "fail",
+      "pr_number": 1977,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31367681896",
+      "title": "Add Tier 0 media, editor, and model contract coverage",
+      "outcome": "pass",
       "commit_message": null,
       "review_markdown": null
     },
     {
       "author": "AndrewLiang-cl",
-      "pr_number": 1965,
-      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31298178517",
-      "title": "Add Tier 0 coverage tests",
+      "pr_number": 1976,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31362138816",
+      "title": "Fix stale FlutterView after startup Launcher transition",
       "outcome": "pass",
       "commit_message": null,
-      "review_markdown": "The patch only adds tests, and the reviewed assertions align with the current model, mapping, panel, and worker-bridge implementations. No actionable defects were identified.\n"
+      "review_markdown": null
+    },
+    {
+      "author": "StolasIn-cl",
+      "pr_number": 1980,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31366751680",
+      "title": "Fix/fix cpp testcases and skill",
+      "outcome": "pass",
+      "commit_message": null,
+      "review_markdown": null
     },
     {
       "author": "AndrewLiang-cl",
-      "pr_number": 1965,
-      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31300111487",
-      "title": "Add Tier 0 coverage tests",
+      "pr_number": 1977,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31369438840",
+      "title": "Add Tier 0 media, editor, and data contract coverage",
       "outcome": "pass",
       "commit_message": null,
-      "review_markdown": "The cache deserialization change correctly restores decrypted URLs for runtime cache objects, and the added tests align with the exercised public contracts. No actionable regressions were identified in the diff.\n"
+      "review_markdown": null
     },
     {
-      "author": "AndrewLiang-cl",
-      "pr_number": 1962,
-      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31297168390",
-      "title": "[What] Scope the implementation_imports suppression per file and harden two BuildContext guards",
+      "author": "StevenLKLiu-cl",
+      "pr_number": 1978,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31364490900",
+      "title": "[What] Strengthen CEIP SharePoint intake preflight",
+      "outcome": "skipped",
+      "commit_message": null,
+      "review_markdown": null
+    },
+    {
+      "author": "ElevenLin-cl",
+      "pr_number": 1975,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31367500724",
+      "title": "Feature/video object removal",
       "outcome": "fail",
+      "commit_message": null,
+      "review_markdown": null
+    },
+    {
+      "author": "StolasIn-cl",
+      "pr_number": 1980,
+      "run_url": "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31374393804",
+      "title": "Fix/fix cpp testcases and skill",
+      "outcome": "pass",
       "commit_message": null,
       "review_markdown": null
     }
   ],
   "rebuild_failures": [
+    {
+      "test_path": "test/view/video_enhance/video_enhance_view_test.dart",
+      "author_name": "Alexander_Wang",
+      "author_email": "Alexander_Wang@cyberlink.com"
+    },
     {
       "test_path": "test/ai_design_studio/decomposition_download_test.dart",
       "author_name": "Angus_Hung",
@@ -90,19 +221,14 @@
       "author_email": "eddy_hsu@cyberlink.com"
     },
     {
-      "test_path": "test/edit_frame_manager/edit_frame_manager_renderless_test.dart",
-      "author_name": "stolas_in",
-      "author_email": "stolas_in@cyberlink.com"
+      "test_path": "test/home_template_views/aipc_tab_filtering_test.dart",
+      "author_name": "Eleven_Lin",
+      "author_email": "eleven_lin@cyberlink.com"
     },
     {
-      "test_path": "test/guards/drag_target_accept_details_unwrap_test.dart",
-      "author_name": "eddy_hsu",
-      "author_email": "eddy_hsu@cyberlink.com"
-    },
-    {
-      "test_path": "test/projects_export/export_list_dialog_test.dart",
-      "author_name": "joe_wu",
-      "author_email": "joe_wu@cyberlink.com"
+      "test_path": "test/video_object_removal/vor_import_view_test.dart",
+      "author_name": "Eleven_Lin",
+      "author_email": "eleven_lin@cyberlink.com"
     }
   ]
 }

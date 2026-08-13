@@ -1,0 +1,366 @@
+﻿{
+    "prs":  [
+                {
+                    "author":  "AndrewLiang-cl",
+                    "pr_number":  1982,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31420175492",
+                    "title":  "Expand Tier 0 production contract coverage",
+                    "outcome":  "fail",
+                    "commit_message":  null,
+                    "review_markdown":  null
+                },
+                {
+                    "author":  "StolasIn-cl",
+                    "pr_number":  1984,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31449017142",
+                    "title":  "Feature/add test cases",
+                    "outcome":  "pass",
+                    "commit_message":  null,
+                    "review_markdown":  null
+                },
+                {
+                    "author":  "StolasIn-cl",
+                    "pr_number":  1985,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31449494064",
+                    "title":  "[What] upload pr-validation-rebuild-agent-guide.md",
+                    "outcome":  "skipped",
+                    "commit_message":  null,
+                    "review_markdown":  ""
+                },
+                {
+                    "author":  "StolasIn-cl",
+                    "pr_number":  1985,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31450879460",
+                    "title":  "[What] upload pr-validation-rebuild-agent-guide.md",
+                    "outcome":  "skipped",
+                    "commit_message":  null,
+                    "review_markdown":  ""
+                },
+                {
+                    "author":  "EddyHsu-cl",
+                    "pr_number":  1983,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31452004200",
+                    "title":  "[What] Fix GDPR startup crash on long checkout paths",
+                    "outcome":  "fail",
+                    "commit_message":  null,
+                    "review_markdown":  null
+                },
+                {
+                    "author":  "StevenLKLiu-cl",
+                    "pr_number":  1986,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31453716441",
+                    "title":  "Document the missing AI usage failure event and route readers to known payload traps",
+                    "outcome":  "skipped",
+                    "commit_message":  null,
+                    "review_markdown":  ""
+                },
+                {
+                    "author":  "StolasIn-cl",
+                    "pr_number":  1984,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31455755179",
+                    "title":  "Feature/add test cases",
+                    "outcome":  "fail",
+                    "commit_message":  null,
+                    "review_markdown":  null
+                },
+                {
+                    "author":  "AndrewLiang-cl",
+                    "pr_number":  1982,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31456795006",
+                    "title":  "Expand Tier 0 production contract coverage",
+                    "outcome":  "fail",
+                    "commit_message":  null,
+                    "review_markdown":  null
+                },
+                {
+                    "author":  "StolasIn-cl",
+                    "pr_number":  1984,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31457999371",
+                    "title":  "Feature/add test cases",
+                    "outcome":  "fail",
+                    "commit_message":  null,
+                    "review_markdown":  null
+                },
+                {
+                    "author":  "StolasIn-cl",
+                    "pr_number":  1984,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31458873800",
+                    "title":  "Feature/add test cases",
+                    "outcome":  "fail",
+                    "commit_message":  null,
+                    "review_markdown":  null
+                },
+                {
+                    "author":  "StolasIn-cl",
+                    "pr_number":  1984,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31460702176",
+                    "title":  "Feature/add test cases",
+                    "outcome":  "fail",
+                    "commit_message":  null,
+                    "review_markdown":  null
+                },
+                {
+                    "author":  "StolasIn-cl",
+                    "pr_number":  1984,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31461092086",
+                    "title":  "Feature/add test cases",
+                    "outcome":  "fail",
+                    "commit_message":  null,
+                    "review_markdown":  null
+                },
+                {
+                    "author":  "JoeWu-CL",
+                    "pr_number":  1987,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31456843569",
+                    "title":  "Fold quiet FrameHeartbeat windows with exponential backoff",
+                    "outcome":  "pass",
+                    "commit_message":  null,
+                    "review_markdown":  null
+                },
+                {
+                    "author":  "StolasIn-cl",
+                    "pr_number":  1984,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31463061808",
+                    "title":  "Feature/add test cases",
+                    "outcome":  "fail",
+                    "commit_message":  null,
+                    "review_markdown":  null
+                },
+                {
+                    "author":  "JoeWu-CL",
+                    "pr_number":  1987,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31465564402",
+                    "title":  "Fold quiet FrameHeartbeat windows with exponential backoff",
+                    "outcome":  "pass",
+                    "commit_message":  null,
+                    "review_markdown":  "The quiet-window folding, backoff, event detection, and accumulated timing tallies are internally consistent and covered by targeted tests. No actionable regressions were identified in the diff.\n"
+                },
+                {
+                    "author":  "AndrewLiang-cl",
+                    "pr_number":  1989,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31466688752",
+                    "title":  "Fix Video Edit by Chat tab persistence",
+                    "outcome":  "fail",
+                    "commit_message":  null,
+                    "review_markdown":  null
+                },
+                {
+                    "author":  "AndrewLiang-cl",
+                    "pr_number":  1990,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31470464456",
+                    "title":  "Add isolated low-closure test coverage batch",
+                    "outcome":  "pass",
+                    "commit_message":  null,
+                    "review_markdown":  "The added widget test can fail based on the runner locale, and the persisted-category test does not validate the compatibility contract it claims to protect.\n\nFull review comments:\n\n- [P2] Pin the widget-test locale before asserting English text ??C:\\actions-runner\\_work\\promeo-pc-promeo\\promeo-pc-promeo\\promeo_trunk\\test\\view\\common_widget\\new_tag_widget_test.dart:19-19\n  On a host whose platform locale resolves to German, `MaterialApp` selects the generated `general_new_tag_text` value `\"Neu\"`, so this `find.text(\u0027NEW\u0027)` lookup throws and makes the test environment-dependent. Set `locale: const Locale(\u0027en\u0027)` or obtain the expected value from `S.of(...)` before asserting it.\n\n- [P2] Assert the persisted category strings explicitly ??C:\\actions-runner\\_work\\promeo-pc-promeo\\promeo-pc-promeo\\promeo_trunk\\test\\model\\color_palette\\magic_template_color_palette_category_test.dart:8-10\n  This round-trip is self-referential: changing `toString()` from (for example) `\"monochrome\"` to `\"mono\"` and leaving `fromString()` tied to it will still pass, even though existing persisted/CMS values can no longer deserialize. Assert the fixed persisted strings (and their expected enum values) directly so the stated compatibility contract is actually protected.\n"
+                },
+                {
+                    "author":  "StevenLKLiu-cl",
+                    "pr_number":  1991,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31472698038",
+                    "title":  "Slim down CEIP skill docs and fix tracking matrix status contradiction",
+                    "outcome":  "skipped",
+                    "commit_message":  null,
+                    "review_markdown":  ""
+                },
+                {
+                    "author":  "StolasIn-cl",
+                    "pr_number":  1992,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31472978977",
+                    "title":  "Cover 10 test cases",
+                    "outcome":  "fail",
+                    "commit_message":  null,
+                    "review_markdown":  null
+                },
+                {
+                    "author":  "StolasIn-cl",
+                    "pr_number":  1992,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31473165716",
+                    "title":  "Cover 10 test cases",
+                    "outcome":  "pass",
+                    "commit_message":  null,
+                    "review_markdown":  "The production refactor preserves the existing extraction and cleanup behavior while making it independently testable. No actionable regressions were identified in the diff.\n"
+                },
+                {
+                    "author":  "HenryCHLiu-cl",
+                    "pr_number":  1993,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31476802676",
+                    "title":  "Chore/i2v generation seam",
+                    "outcome":  "fail",
+                    "commit_message":  null,
+                    "review_markdown":  null
+                },
+                {
+                    "author":  "AndrewLiang-cl",
+                    "pr_number":  1989,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31477397117",
+                    "title":  "Fix Video Edit by Chat tab persistence",
+                    "outcome":  "pass",
+                    "commit_message":  null,
+                    "review_markdown":  ""
+                },
+                {
+                    "author":  "LeonTsai-cl",
+                    "pr_number":  1994,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31480978891",
+                    "title":  "[Fix] Support offline WebView2 package provisioning",
+                    "outcome":  "skipped",
+                    "commit_message":  null,
+                    "review_markdown":  "The change correctly prefers the pre-provisioned package directory when both required NuGet targets are present and retains the existing download fallback otherwise.\n"
+                },
+                {
+                    "author":  "HenryCHLiu-cl",
+                    "pr_number":  1993,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31481227507",
+                    "title":  "Chore/i2v generation seam",
+                    "outcome":  "pass",
+                    "commit_message":  null,
+                    "review_markdown":  "The I2V refactor appears behavior-preserving, but the new PR-only coverage exclusions violate the repository\u0027s centralized coverage-policy contract and can hide production code from coverage enforcement.\n\nReview comment:\n\n- [P2] Centralize the new coverage exclusions ??C:\\actions-runner\\_work\\promeo-pc-promeo\\promeo-pc-promeo\\promeo_trunk\\scripts\\pr_validation\\DartCoverage-Helpers.ps1:383-384\n  These executable I2V production adapters are being exempted only in the PR diff-cover helper, so their coverage is silently omitted while the authoritative coverage policy remains unaware of the exception. Move this policy decision to `scripts/coverage/coverage-scope.json` and add its contract coverage, as required by `AGENTS.md:5-7`.\n"
+                },
+                {
+                    "author":  "LeonTsai-cl",
+                    "pr_number":  1995,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31481345692",
+                    "title":  "-------- close Promeo 8.23.0.5611 -----------",
+                    "outcome":  "fail",
+                    "commit_message":  null,
+                    "review_markdown":  null
+                },
+                {
+                    "author":  "HenryCHLiu-cl",
+                    "pr_number":  1996,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31481617075",
+                    "title":  "Feature/ttv agent service",
+                    "outcome":  "pass",
+                    "commit_message":  null,
+                    "review_markdown":  ""
+                },
+                {
+                    "author":  "EddyHsu-cl",
+                    "pr_number":  1997,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31483424247",
+                    "title":  "Feature/integration tests",
+                    "outcome":  "fail",
+                    "commit_message":  null,
+                    "review_markdown":  null
+                },
+                {
+                    "author":  "EddyHsu-cl",
+                    "pr_number":  1997,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31486103765",
+                    "title":  "Feature/integration tests",
+                    "outcome":  "fail",
+                    "commit_message":  null,
+                    "review_markdown":  null
+                },
+                {
+                    "author":  "AndrewLiang-cl",
+                    "pr_number":  1998,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31485994923",
+                    "title":  "Fix eBug PRP265606-0013: AI Marketing Video Volume slider does not appear in Select Range",
+                    "outcome":  "pass",
+                    "commit_message":  null,
+                    "review_markdown":  ""
+                },
+                {
+                    "author":  "HenryCHLiu-cl",
+                    "pr_number":  1999,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31486319912",
+                    "title":  "Remove the two I2V diff-cover exclusions instead of centralizing them",
+                    "outcome":  "skipped",
+                    "commit_message":  null,
+                    "review_markdown":  ""
+                },
+                {
+                    "author":  "EddyHsu-cl",
+                    "pr_number":  2000,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31486917812",
+                    "title":  "[What] Batch Flutter analyze paths within Windows command limits",
+                    "outcome":  "skipped",
+                    "commit_message":  null,
+                    "review_markdown":  ""
+                },
+                {
+                    "author":  "HenryCHLiu-cl",
+                    "pr_number":  2001,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31487567079",
+                    "title":  "Name the applicable PR gates in the CLAUDE.md Pre-Completion Checklist",
+                    "outcome":  "skipped",
+                    "commit_message":  null,
+                    "review_markdown":  ""
+                },
+                {
+                    "author":  "HenryCHLiu-cl",
+                    "pr_number":  1996,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31487812806",
+                    "title":  "Feature/ttv agent service",
+                    "outcome":  "pass",
+                    "commit_message":  null,
+                    "review_markdown":  "No discrete, actionable correctness issues were identified in the changes relative to the specified merge base.\n"
+                },
+                {
+                    "author":  "HenryCHLiu-cl",
+                    "pr_number":  2002,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31491907265",
+                    "title":  "隤踵 CLAUDE.md嚗re-Completion Checklist 鋆? l10n 摮葡瑼Ｘ嚗蒂蝘駁????CI ?膩",
+                    "outcome":  "skipped",
+                    "commit_message":  null,
+                    "review_markdown":  ""
+                },
+                {
+                    "author":  "HenryCHLiu-cl",
+                    "pr_number":  2002,
+                    "run_url":  "https://github.com/CyberLink-Team/promeo-pc-promeo/actions/runs/31495706274",
+                    "title":  "隤踵 CLAUDE.md嚗re-Completion Checklist 鋆? l10n 摮葡瑼Ｘ嚗蒂蝘駁????CI ?膩",
+                    "outcome":  "skipped",
+                    "commit_message":  null,
+                    "review_markdown":  "The working-tree scan preserves the production path policy and added-line semantics while handling untracked files. The new working-tree, fixture, and policy test harnesses pass.\n"
+                }
+            ],
+    "rebuild_failures":  [
+                             {
+                                 "test_path":  "test/ai_design_studio/decomposition_download_test.dart",
+                                 "author_name":  "Angus_Hung",
+                                 "author_email":  "angus_hung@cyberlink.com"
+                             },
+                             {
+                                 "test_path":  "test/aipc_module/startup_provider_lifecycle_test.dart",
+                                 "author_name":  "eddy_hsu",
+                                 "author_email":  "eddy_hsu@cyberlink.com"
+                             },
+                             {
+                                 "test_path":  "test/utility/md5_utility_test.dart",
+                                 "author_name":  "AndrewLiang-cl",
+                                 "author_email":  "andrew_liang@cyberlink.com"
+                             },
+                             {
+                                 "test_path":  "test/utility/search_utility_test.dart",
+                                 "author_name":  "AndrewLiang-cl",
+                                 "author_email":  "andrew_liang@cyberlink.com"
+                             },
+                             {
+                                 "test_path":  "test/utility/window_utility_close_confirm_test.dart",
+                                 "author_name":  "Angus_Hung",
+                                 "author_email":  "angus_hung@cyberlink.com"
+                             },
+                             {
+                                 "test_path":  "test/video_object_removal/vor_import_view_test.dart",
+                                 "author_name":  "Eleven_Lin",
+                                 "author_email":  "eleven_lin@cyberlink.com"
+                             },
+                             {
+                                 "test_path":  "test/ai_marketing_advisor/generate_more_deadlock_test.dart",
+                                 "author_name":  "eddy_hsu",
+                                 "author_email":  "eddy_hsu@cyberlink.com"
+                             },
+                             {
+                                 "test_path":  "test/controller/download/music/music_object_test.dart",
+                                 "author_name":  "AndrewLiang-cl",
+                                 "author_email":  "andrew_liang@cyberlink.com"
+                             },
+                             {
+                                 "test_path":  "test/home_template_views/aipc_tab_filtering_test.dart",
+                                 "author_name":  "Eleven_Lin",
+                                 "author_email":  "eleven_lin@cyberlink.com"
+                             }
+                         ]
+}
