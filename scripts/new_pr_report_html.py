@@ -326,6 +326,131 @@ def build_coverage_section(summary):
     )
 
 
+def _is_number(value):
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
+def _quality_trend_chart(title, entries, value_for_entry, value_suffix, color,
+                         marks_partial=False):
+    """Render one static SVG trend chart with its own scale and data gaps."""
+    values = [value_for_entry(entry) for entry in entries]
+    points = [(index, value) for index, value in enumerate(values)
+              if _is_number(value)]
+    if not points:
+        return ""
+
+    numeric_values = [value for _, value in points]
+    low, high = min(numeric_values), max(numeric_values)
+    if low == high:
+        padding = 1 if low == 0 else max(abs(low) * 0.05, 1)
+    else:
+        padding = (high - low) * 0.12
+    low -= padding
+    high += padding
+    if value_suffix == "%":
+        low, high = max(0, low), min(100, high)
+        if low == high:
+            low, high = max(0, low - 1), min(100, high + 1)
+
+    left, right, top, bottom = 28, 238, 20, 86
+    span = max(1, len(entries) - 1)
+
+    def x_at(index):
+        return left + (right - left) * index / span
+
+    def y_at(value):
+        return bottom - (value - low) * (bottom - top) / (high - low)
+
+    segments, current = [], []
+    for index, value in enumerate(values):
+        if _is_number(value):
+            current.append((index, value))
+        elif current:
+            segments.append(current)
+            current = []
+    if current:
+        segments.append(current)
+    paths = "".join(
+        f"<path d='M {' L '.join(f'{x_at(index):.1f},{y_at(value):.1f}' for index, value in segment)}' "
+        f"fill='none' stroke='{color}' stroke-width='2'/>"
+        for segment in segments
+    )
+    circles = []
+    for index, value in points:
+        partial = marks_partial and (entries[index].get("dart_coverage") or {}).get("measurement_complete") is False
+        dash = " stroke-dasharray='3 2'" if partial else ""
+        circles.append(
+            f"<circle cx='{x_at(index):.1f}' cy='{y_at(value):.1f}' r='3' "
+            f"fill='{'white' if partial else color}' stroke='{color}' stroke-width='2'"
+            f"{dash}/>"
+        )
+
+    latest_index, latest_value = points[-1]
+    previous_value = values[latest_index - 1] if latest_index > 0 else None
+    delta = ""
+    if _is_number(previous_value):
+        difference = latest_value - previous_value
+        sign = "+" if difference > 0 else ""
+        unit = " pp" if value_suffix == "%" else ""
+        delta = f"<span style='color:#5f6368;font-size:11px;margin-left:6px'>{sign}{difference:g}{unit}</span>"
+    latest = f"{latest_value:g}{value_suffix}"
+    first_label = esc(str(entries[0].get("date", ""))[-5:])
+    last_label = esc(str(entries[-1].get("date", ""))[-5:])
+    return (
+        "<div class='quality-trend-chart' style='border:1px solid #e8eaed;border-radius:6px;padding:10px 10px 6px'>"
+        f"<div style='font-size:11px;color:#5f6368;font-weight:700'>{esc(title)}</div>"
+        f"<div style='font-size:20px;color:#202124;font-weight:700'>{latest}{delta}</div>"
+        "<svg viewBox='0 0 250 106' width='100%' role='img' "
+        f"aria-label='{esc(title)} trend'>"
+        f"<line x1='{left}' y1='{top}' x2='{right}' y2='{top}' stroke='#f1f3f4'/>"
+        f"<line x1='{left}' y1='{bottom}' x2='{right}' y2='{bottom}' stroke='#f1f3f4'/>"
+        f"<text x='0' y='{top + 4}' fill='#9e9e9e' font-size='9'>{high:g}{value_suffix}</text>"
+        f"<text x='0' y='{bottom + 3}' fill='#9e9e9e' font-size='9'>{low:g}{value_suffix}</text>"
+        f"{paths}{''.join(circles)}"
+        f"<text x='{left}' y='103' fill='#9e9e9e' font-size='9'>{first_label}</text>"
+        f"<text x='{right}' y='103' text-anchor='end' fill='#9e9e9e' font-size='9'>{last_label}</text>"
+        "</svg></div>"
+    )
+
+
+def build_quality_trend_section(history):
+    """Render the bounded data-branch quality history without external charting code."""
+    if not isinstance(history, dict) or not isinstance(history.get("entries"), list):
+        return ""
+    entries = [entry for entry in history["entries"]
+               if isinstance(entry, dict) and isinstance(entry.get("date"), str)]
+    if not entries:
+        return ""
+    entries.sort(key=lambda entry: entry["date"])
+    entries = entries[-30:]
+    charts = [
+        _quality_trend_chart(
+            "Dart Coverage", entries,
+            lambda entry: (entry.get("dart_coverage") or {}).get("percent"),
+            "%", "#1565c0", marks_partial=True,
+        ),
+        _quality_trend_chart(
+            "Test Files", entries, lambda entry: entry.get("test_file_count"),
+            "", "#2e7d32",
+        ),
+        _quality_trend_chart(
+            "Test Cases", entries, lambda entry: entry.get("test_case_count"),
+            "", "#7b1fa2",
+        ),
+    ]
+    charts = [chart for chart in charts if chart]
+    if not charts:
+        return ""
+    return (
+        "\n  <!-- Quality trend -->\n"
+        "  <div class='section quality-trend-section'>\n"
+        "    <div class='section-label'>Quality Trend &mdash; last 30 nightly runs</div>\n"
+        "    <div style='padding:12px 16px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px'>"
+        f"{''.join(charts)}</div>\n"
+        "  </div>"
+    )
+
+
 COVERAGE_DELTA_ROW_CAP = 30
 
 
@@ -716,6 +841,12 @@ def main():
         coverage_section = ""
 
     try:
+        quality_trend_section = build_quality_trend_section(data.get("quality_metrics_history"))
+    except Exception as e:
+        print(f"WARNING: build_quality_trend_section failed, omitting section: {e}", file=sys.stderr)
+        quality_trend_section = ""
+
+    try:
         coverage_delta_section = build_coverage_delta_section(data.get("dart_coverage_delta"))
     except Exception as e:
         print(f"WARNING: build_coverage_delta_section failed, omitting section: {e}", file=sys.stderr)
@@ -907,6 +1038,8 @@ def main():
     </div>
     <div class="meta">{esc(data.get('generated_at',''))}</div>
   </div>
+
+  {quality_trend_section}
 
   {coverage_section}
 

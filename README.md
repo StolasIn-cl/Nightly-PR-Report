@@ -8,6 +8,12 @@
 - 首次設定時，`scripts\setup_nightly_report.py` 會在本機產生 `SKILL.local.md`。
 - `SKILL.local.md` 是給 Cowork / Agent 實際使用的本機檔案，不應提交。
 
+## Quality trend data
+
+`data/test-mapping` also provides `quality-metrics-history.json`, a schema-v1 history of the latest 30 Taipei nightly dates. Every snapshot contains Dart coverage and its completeness state, the number of `test/**/*_test.dart` files, and the number of executable `test()` / `testWidgets()` cases. The report renders these as three static SVG trend charts above Coverage.
+
+An absent coverage percentage is a gap, not 0%. A `measurement_complete=false` percentage is displayed as a partial measurement. The scheduled cleanup only removes old `pr-runs/` directories and must never remove this history artifact.
+
 ---
 
 ## 流程概觀

@@ -52,6 +52,7 @@ def load_branch_artifacts(ref, git_root):
         "dart_test_timings": "dart-test-timings.json",
         "dart_test_timings_previous": "dart-test-timings-previous.json",
         "dart_coverage_delta": "dart-coverage-delta.json",
+        "quality_metrics_history": "quality-metrics-history.json",
     }
     return {key: parse_json(git_show(ref, path, git_root)) for key, path in paths.items()}
 

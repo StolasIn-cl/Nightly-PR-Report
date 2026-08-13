@@ -124,6 +124,32 @@ class CoverageSectionTests(unittest.TestCase):
         self.assertNotIn("0%", html)
 
 
+class QualityTrendSectionTests(unittest.TestCase):
+    def test_renders_three_independent_charts_and_marks_partial_coverage(self):
+        history = {
+            "schema_version": 1,
+            "entries": [
+                {"date": "2026-08-10", "dart_coverage": {"percent": 60.0, "measurement_complete": True}, "test_file_count": 10, "test_case_count": 100},
+                {"date": "2026-08-11", "dart_coverage": {"percent": None, "measurement_complete": False}, "test_file_count": 11, "test_case_count": 105},
+                {"date": "2026-08-12", "dart_coverage": {"percent": 62.5, "measurement_complete": False}, "test_file_count": 12, "test_case_count": 110},
+            ],
+        }
+
+        html = rpt.build_quality_trend_section(history)
+
+        self.assertIn("Quality Trend", html)
+        self.assertIn("Dart Coverage", html)
+        self.assertIn("Test Files", html)
+        self.assertIn("Test Cases", html)
+        self.assertIn("quality-trend-chart", html)
+        self.assertIn("stroke-dasharray", html)
+        self.assertIn("fill='white'", html)
+
+    def test_returns_empty_for_malformed_or_empty_history(self):
+        self.assertEqual(rpt.build_quality_trend_section(None), "")
+        self.assertEqual(rpt.build_quality_trend_section({"entries": "bad"}), "")
+
+
 class CoverageDeltaSectionTests(unittest.TestCase):
     def test_groups_new_increased_and_decreased_and_omits_unchanged(self):
         html = rpt.build_coverage_delta_section({
@@ -221,6 +247,15 @@ class ReportLayoutTests(unittest.TestCase):
                     "percent": None,
                 },
             },
+            "quality_metrics_history": {
+                "schema_version": 1,
+                "entries": [{
+                    "date": "2026-07-27",
+                    "dart_coverage": {"percent": 64.12, "measurement_complete": True},
+                    "test_file_count": 100,
+                    "test_case_count": 1000,
+                }],
+            },
         }
 
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -245,6 +280,10 @@ class ReportLayoutTests(unittest.TestCase):
         self.assertLess(html.index("<!-- Native coverage -->"), html.index("Pull Requests"))
         self.assertNotIn("Coverage <strong", html)
         self.assertNotIn("40318/290815 lines", html)
+
+    def test_full_report_places_quality_trend_before_coverage(self):
+        html = self.render_report_with_full_coverage()
+        self.assertLess(html.index("<!-- Quality trend -->"), html.index("<!-- Native coverage -->"))
 
     def test_report_styles_priority_labels_without_coloring_note_bodies(self):
         report_html = self.render_report_with_full_coverage()
