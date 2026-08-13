@@ -8,6 +8,8 @@
 - 首次設定時，`scripts\setup_nightly_report.py` 會在本機產生 `SKILL.local.md`。
 - `SKILL.local.md` 是給 Cowork / Agent 實際使用的本機檔案，不應提交。
 
+> 如果只是想產生「這一次」的報告、不想在自己電腦上留下 git remote / 排程 / `SKILL.local.md` 等持久化設定，請改看 [`ONE_OFF_REPORT.md`](ONE_OFF_REPORT.md)，不要照下面的首次設定流程走。
+
 ---
 
 ## 流程概觀
