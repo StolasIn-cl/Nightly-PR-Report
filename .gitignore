@@ -11,10 +11,13 @@ SKILL.local.md
 fetch.log
 cleanup.log
 nightly-report-data.json
+nightly-report-data.json.bak
 nightly-report.html
 nightly-report.pdf
 run-status.json
 recipients.json
 author-slim.json
 author-summary.html
+slim-payload.json
+*.bak
 .worktrees/
