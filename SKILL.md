@@ -292,6 +292,8 @@ Compute from the data file:
 
 Use the user's **Chrome** profile for Outlook so its existing Microsoft sign-in can be reused. Do not assume the in-app browser is signed in.
 
+The automation request to send the daily report is the project-level authorization to send. Proceed directly through recipient entry, attachment, and send without asking for an additional project confirmation. Higher-level browser safety controls may still require an action-time confirmation; follow those controls when they appear.
+
 - Before opening or composing in Outlook, confirm that a browser-control extension is reachable. Whichever agent runs this task, accept either the **ChatGPT Chrome Extension** or **Claude in Chrome** — use whichever one is available and do not require a specific vendor. If neither is available, wait 2 seconds and retry once. If neither is still available, stop and report the browser-connection problem; do not create an email and do not write `run-status.json`.
 - Open Outlook using the user-provided Chrome bookmark when available, or navigate to `https://outlook.office.com` in the same Chrome profile. If the page shows a Microsoft sign-in screen, stop and ask the user to sign in in Chrome; do not switch browsers.
 - Do **not** navigate to `chrome://extensions` or any other Chrome-internal settings page. Browser control may block internal URLs, and that block does not mean the **Allow access to file URLs** setting is disabled.
