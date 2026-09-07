@@ -49,12 +49,24 @@ def load_branch_artifacts(ref, git_root):
         "full_coverage_summary": "full-coverage-summary.json",
         "dart_failed_tests": "dart-failed-tests.json",
         "cpp_failed_tests": "cpp-failed-tests.json",
+        "unsafe_merge_folders": "unsafe-merge-folders.json",
         "dart_test_timings": "dart-test-timings.json",
         "dart_test_timings_previous": "dart-test-timings-previous.json",
         "dart_coverage_delta": "dart-coverage-delta.json",
         "quality_metrics_history": "quality-metrics-history.json",
     }
     return {key: parse_json(git_show(ref, path, git_root)) for key, path in paths.items()}
+
+
+def fetch_data_branch(data_branch, git_root):
+    """Fetch the report source branch, failing instead of reading a stale ref."""
+    result = git(["fetch", "origin", data_branch], cwd=git_root)
+    if result.returncode == 0:
+        return
+
+    detail = (result.stderr or result.stdout or "").strip()
+    suffix = f": {detail}" if detail else ""
+    raise RuntimeError(f"Unable to fetch origin/{data_branch}{suffix}")
 
 
 def main():
@@ -77,8 +89,11 @@ def main():
     out_file = args.out or os.path.join(git_root, "nightly-report-data.json")
     prefix   = f"pr-runs/{date}/"
 
-    # Fetch latest data branch (ignore errors — may already be up-to-date or offline)
-    git(["fetch", "origin", data_branch], cwd=git_root)
+    try:
+        fetch_data_branch(data_branch, git_root)
+    except RuntimeError as error:
+        print(f"ERROR: {error}", file=sys.stderr)
+        sys.exit(1)
 
     # List all files under pr-runs/<date>/
     r = git(["ls-tree", "-r", "--name-only", ref], cwd=git_root)

@@ -107,6 +107,17 @@ class TimingSectionTests(unittest.TestCase):
 
 
 class CoverageSectionTests(unittest.TestCase):
+    def test_coverage_section_shows_snapshot_time_and_mode(self):
+        html = rpt.build_coverage_section({
+            "mode": "full",
+            "generated_at": "2026-09-06T22:05:24Z",
+            "dart": {"status": "measured", "percent": 64.12},
+            "cpp": {"status": "measured", "percent": 2.02},
+            "combined": {"status": "measured", "percent": 40.0},
+        })
+        self.assertIn("as of 2026-09-06T22:05:24Z", html)
+        self.assertIn("Full", html)
+
     def test_coverage_section_shows_measured_dart_and_incomplete_cpp(self):
         html = rpt.build_coverage_section({
             "complete": False,
@@ -163,6 +174,42 @@ class CoverageDeltaSectionTests(unittest.TestCase):
         self.assertIn("Coverage Decreased &mdash; 1 file(s)", html)
         self.assertIn("+1 more", html)
         self.assertIn("loss.dart", html)
+
+
+class CoverageDeltaVisibilityTests(unittest.TestCase):
+    def render_report(self, date):
+        data = {
+            "date": date,
+            "generated_at": f"{date}T00:00:00Z",
+            "prs": [],
+            "pr_count": 0,
+            "dart_coverage_delta": {
+                "total": {"current_line_pct": 50, "delta_line_pct": 1},
+                "files": [],
+            },
+        }
+        with tempfile.TemporaryDirectory() as tmpdir:
+            data_path = os.path.join(tmpdir, "nightly-report-data.json")
+            out_path = os.path.join(tmpdir, "nightly-report.html")
+            with open(data_path, "w", encoding="utf-8") as file:
+                json.dump(data, file)
+            result = subprocess.run(
+                [sys.executable, os.path.join(SCRIPTS_DIR, "new_pr_report_html.py"),
+                 "--data", data_path, "--out", out_path],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(result.returncode, 0, msg=result.stderr)
+            with open(out_path, encoding="utf-8") as file:
+                return file.read()
+
+    def test_hides_full_coverage_delta_on_weekday_report(self):
+        html = self.render_report("2026-09-11")  # Friday
+        self.assertNotIn("Dart Coverage Delta", html)
+
+    def test_shows_full_coverage_delta_on_saturday_report(self):
+        html = self.render_report("2026-09-12")  # Saturday
+        self.assertIn("Dart Coverage Delta", html)
 
 
 class QualityMetricsHistorySectionTests(unittest.TestCase):
@@ -235,6 +282,28 @@ class CppFailureSectionTests(unittest.TestCase):
         self.assertNotIn("Author", html)
 
 
+class UnsafeMergeFolderSectionTests(unittest.TestCase):
+    def test_unsafe_folders_show_folder_only(self):
+        html = rpt.build_unsafe_merge_folders_section({
+            "generated_at": "2026-09-07T06:04:29Z",
+            "commit": "hidden-commit-value",
+            "folders": ["lib/first_folder", "lib/second_folder"],
+        })
+        self.assertIn("Unsafe Merge Folders", html)
+        self.assertIn("Folder", html)
+        self.assertIn("lib/first_folder", html)
+        self.assertIn("lib/second_folder", html)
+        self.assertIn("as of 2026-09-07", html)
+        self.assertNotIn("hidden-commit-value", html)
+        self.assertNotIn("Author", html)
+
+    def test_empty_unsafe_folder_list_is_omitted(self):
+        self.assertEqual(
+            rpt.build_unsafe_merge_folders_section({"folders": []}),
+            "",
+        )
+
+
 class ReportLayoutTests(unittest.TestCase):
     def render_report_with_full_coverage(self):
         data = {
@@ -258,6 +327,11 @@ class ReportLayoutTests(unittest.TestCase):
                 "line_pct": 13.86,
                 "line_hit": 40318,
                 "line_total": 290815,
+            },
+            "unsafe_merge_folders": {
+                "generated_at": "2026-07-27T00:00:00Z",
+                "commit": "not-rendered",
+                "folders": ["lib/unsafe_folder"],
             },
             "full_coverage_summary": {
                 "complete": False,
@@ -303,6 +377,14 @@ class ReportLayoutTests(unittest.TestCase):
         self.assertLess(html.index("<!-- Native coverage -->"), html.index("Pull Requests"))
         self.assertNotIn("Coverage <strong", html)
         self.assertNotIn("40318/290815 lines", html)
+        self.assertNotIn("Codebase coverage", html)
+
+    def test_full_report_places_unsafe_folders_after_rebuild_failures_area(self):
+        html = self.render_report_with_full_coverage()
+        self.assertIn("Unsafe Merge Folders", html)
+        self.assertIn("lib/unsafe_folder", html)
+        self.assertIn("Folder", html)
+        self.assertLess(html.index("Unsafe Merge Folders"), html.index("Dart Coverage Delta") if "Dart Coverage Delta" in html else len(html))
 
     def test_report_styles_priority_labels_without_coloring_note_bodies(self):
         report_html = self.render_report_with_full_coverage()

@@ -10,6 +10,7 @@ Usage:
 """
 
 import argparse
+import datetime
 import html as htmllib
 import json
 import os
@@ -56,6 +57,14 @@ def fmt_test_seconds(seconds):
 
 
 TIMING_ROW_CAP = 30
+
+
+def should_render_coverage_delta(report_date):
+    """Coverage delta is a Full snapshot result, shown on Saturday reports."""
+    try:
+        return datetime.date.fromisoformat(str(report_date)).weekday() == 5
+    except (TypeError, ValueError):
+        return False
 
 
 def _rebuild_total_seconds(metadata):
@@ -284,6 +293,48 @@ def build_rebuild_section(rft):
     )
 
 
+def build_unsafe_merge_folders_section(artifact):
+    """Return the current unsafe merge folders as a folder-only warning table."""
+    if not artifact:
+        return ""
+    raw_folders = artifact.get("folders")
+    if not isinstance(raw_folders, list):
+        return ""
+    folders = [folder for folder in raw_folders if isinstance(folder, str) and folder]
+    if not folders:
+        return ""
+
+    generated_at = artifact.get("generated_at")
+    date_str = f" (as of {esc(str(generated_at)[:10])})" if generated_at else ""
+    th_style = (
+        "padding:9px 11px;background:#c62828;color:#fff;text-align:left;"
+        "font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;"
+        "white-space:nowrap;"
+    )
+    td_style = "padding:8px 11px;border-bottom:1px solid #f1f3f4;vertical-align:top;font-size:12px;"
+    rows = []
+    for index, folder in enumerate(folders):
+        row_bg = "#fff8f8" if index % 2 == 0 else "#fafafa"
+        rows.append(
+            f"<tr style='background:{row_bg}'>"
+            f"<td style='{td_style}font-family:monospace'>{esc(folder)}</td>"
+            f"</tr>"
+        )
+    table = (
+        "<table style='border-collapse:collapse;width:100%;font-family:inherit'>"
+        f"<thead><tr><th style='{th_style}'>Folder</th></tr></thead>"
+        f"<tbody>{''.join(rows)}</tbody></table>"
+    )
+    return (
+        f"\n  <!-- Unsafe merge folders -->\n"
+        f"  <div class=\"section rebuild-section\">\n"
+        f"    <div class=\"section-label\" style=\"color:#c62828\">"
+        f"&#9888; Unsafe Merge Folders &mdash; {len(folders)} folder(s){date_str}</div>\n"
+        f"    {table}\n"
+        f"  </div>"
+    )
+
+
 def build_coverage_section(summary):
     """Return native Dart, C++, and combined coverage, preserving states."""
     if not summary:
@@ -317,10 +368,22 @@ def build_coverage_section(summary):
             f"{detail}</div>"
         )
 
+    snapshot_details = []
+    if summary.get("generated_at"):
+        snapshot_details.append(f"as of {esc(summary['generated_at'])}")
+    if summary.get("mode"):
+        snapshot_details.append(f"{esc(str(summary['mode']).capitalize())} run")
+    coverage_label = "Coverage"
+    if snapshot_details:
+        coverage_label += (
+            " <span style='font-size:10px;font-weight:400;text-transform:none;"
+            f"letter-spacing:0;color:#9e9e9e'>({' · '.join(snapshot_details)})</span>"
+        )
+
     return (
         f"\n  <!-- Native coverage -->\n"
         f"  <div class=\"section\">\n"
-        f"    <div class=\"section-label\">Coverage</div>\n"
+        f"    <div class=\"section-label\">{coverage_label}</div>\n"
         f"    <div style='padding:12px 16px;display:flex;gap:10px'>{''.join(cards)}</div>\n"
         f"  </div>"
     )
@@ -734,9 +797,6 @@ def main():
     skip_count  = sum(1 for p in prs if (p.get("summary") or {}).get("outcome") == "skipped")
     total_tests = sum((p.get("summary") or {}).get("selected_test_count") or 0 for p in prs)
 
-    cc      = data.get("codebase_coverage")
-    cov_pct = round(cc.get("line_pct", 0), 2) if cc else None
-
     # ── Stats pills ──────────────────────────────────────────────────────────
 
     pills_html = ""
@@ -860,6 +920,17 @@ def main():
         rebuild_section = ""
 
     try:
+        unsafe_merge_folders_section = build_unsafe_merge_folders_section(
+            data.get("unsafe_merge_folders")
+        )
+    except Exception as e:
+        print(
+            f"WARNING: build_unsafe_merge_folders_section failed, omitting section: {e}",
+            file=sys.stderr,
+        )
+        unsafe_merge_folders_section = ""
+
+    try:
         timing_section = build_timing_section(
             data.get("dart_test_timings"), data.get("dart_test_timings_previous")
         )
@@ -873,11 +944,13 @@ def main():
         print(f"WARNING: build_coverage_section failed, omitting section: {e}", file=sys.stderr)
         coverage_section = ""
 
-    try:
-        coverage_delta_section = build_coverage_delta_section(data.get("dart_coverage_delta"))
-    except Exception as e:
-        print(f"WARNING: build_coverage_delta_section failed, omitting section: {e}", file=sys.stderr)
-        coverage_delta_section = ""
+    coverage_delta_section = ""
+    if should_render_coverage_delta(date):
+        try:
+            coverage_delta_section = build_coverage_delta_section(data.get("dart_coverage_delta"))
+        except Exception as e:
+            print(f"WARNING: build_coverage_delta_section failed, omitting section: {e}", file=sys.stderr)
+            coverage_delta_section = ""
 
     try:
         quality_metrics_history_section = build_quality_metrics_history_section(
@@ -892,19 +965,6 @@ def main():
     except Exception as e:
         print(f"WARNING: build_cpp_failures_section failed, omitting section: {e}", file=sys.stderr)
         cpp_failures_section = ""
-
-    # ── Footer ───────────────────────────────────────────────────────────────
-
-    footer = ""
-    if cc:
-        footer = (
-            f"<div style='font-size:10px;color:#9e9e9e;border-top:1px solid #f1f3f4;"
-            f"padding-top:8px;margin-top:14px;text-align:right'>"
-            f"Codebase coverage: <strong style='color:#5f6368'>{cov_pct}%</strong>"
-            f" ({cc.get('line_hit','?')}&thinsp;/&thinsp;{cc.get('line_total','?')} lines)"
-            f"&nbsp;&middot;&nbsp;Generated {esc(data.get('generated_at',''))}"
-            f"</div>"
-        )
 
     # ── Full HTML ─────────────────────────────────────────────────────────────
 
@@ -1093,6 +1153,8 @@ def main():
 
   {rebuild_section}
 
+  {unsafe_merge_folders_section}
+
   {cpp_failures_section}
 
   <!-- Author notes -->
@@ -1102,7 +1164,6 @@ def main():
         Author Notes
       </div>
       <!-- AUTHOR_SUMMARY -->
-      {footer}
     </div>
   </div>
 

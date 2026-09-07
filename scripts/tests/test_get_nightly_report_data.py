@@ -1,4 +1,5 @@
 import os
+import subprocess
 import sys
 import unittest
 from unittest import mock
@@ -15,6 +16,7 @@ def fake_git_show(ref, path, git_root):
         "full-coverage-summary.json": '{"schema_version": 1}',
         "dart-failed-tests.json": '{"failed_test_count": 2}',
         "cpp-failed-tests.json": '{"failed_package_count": 1}',
+        "unsafe-merge-folders.json": '{"generated_at": "2026-09-07T06:04:29Z", "folders": ["lib/example"]}',
         "dart-test-timings.json": '{"metadata": {"test_count": 2}}',
         "dart-test-timings-previous.json": '{"metadata": {"test_count": 1}}',
         "quality-metrics-history.json": '{"schema_version": 1, "entries": []}',
@@ -23,12 +25,24 @@ def fake_git_show(ref, path, git_root):
 
 
 class BranchArtifactTests(unittest.TestCase):
+    def test_fetch_failure_raises_instead_of_using_stale_remote_ref(self):
+        failed = subprocess.CompletedProcess(
+            args=["git", "fetch"],
+            returncode=128,
+            stdout="",
+            stderr="network unavailable",
+        )
+        with mock.patch.object(fetcher, "git", return_value=failed):
+            with self.assertRaisesRegex(RuntimeError, "network unavailable"):
+                fetcher.fetch_data_branch("data/test-mapping", "repo")
+
     def test_load_branch_artifacts_uses_current_names(self):
         with mock.patch.object(fetcher, "git_show", side_effect=fake_git_show) as show:
             artifacts = fetcher.load_branch_artifacts("origin/data/test-mapping", "repo")
 
         self.assertEqual(artifacts["full_coverage_summary"]["schema_version"], 1)
         self.assertEqual(artifacts["cpp_failed_tests"]["failed_package_count"], 1)
+        self.assertEqual(artifacts["unsafe_merge_folders"]["folders"], ["lib/example"])
         self.assertEqual(artifacts["dart_test_timings"]["metadata"]["test_count"], 2)
         self.assertEqual(artifacts["quality_metrics_history"]["schema_version"], 1)
         requested = [call.args[1] for call in show.call_args_list]
