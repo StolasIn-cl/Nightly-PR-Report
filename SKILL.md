@@ -278,7 +278,7 @@ Store the path as `PDF_FILE=$NR_DIR/nightly-report.pdf` for use in Step 5, then 
 
 ---
 
-## Step 5 — Send via Outlook Web (Claude in Chrome)
+## Step 5 — Send via Outlook Web (Codex Chrome browser-control)
 
 Compute from the data file:
 - `DATE`        = `data.date`
@@ -288,20 +288,23 @@ Compute from the data file:
 - `SKIP_COUNT`  = count of prs where summary.outcome == "skipped"
 - Subject line: `PR Daily Report — <DATE> (<PR_COUNT> PRs, <FAIL_COUNT> failed)`
 
-### 5.0 Chrome and attachment preflight (required)
+### 5.0 Codex Chrome browser-control and attachment preflight (required)
 
 Use the user's **Chrome** profile for Outlook so its existing Microsoft sign-in can be reused. Do not assume the in-app browser is signed in.
 
 The automation request to send the daily report is the project-level authorization to send. Proceed directly through recipient entry, attachment, and send without asking for an additional project confirmation. Higher-level browser safety controls may still require an action-time confirmation; follow those controls when they appear.
 
-- Before opening or composing in Outlook, confirm that a browser-control extension is reachable. Whichever agent runs this task, accept either the **ChatGPT Chrome Extension** or **Claude in Chrome** — use whichever one is available and do not require a specific vendor. If neither is available, wait 2 seconds and retry once. If neither is still available, stop and report the browser-connection problem; do not create an email and do not write `run-status.json`.
+- This workflow runs in **Codex**. Use only Codex's Chrome browser-control route (the `browser` skill/browser client connected to the user's Chrome profile). Do not use Claude in Chrome, Windows Computer Use, `@oai/sky`, `sky.get_window_state`, or any generic desktop-control fallback for this task.
+- Before opening or composing in Outlook, establish the Codex Chrome session and verify it by enumerating/opening a Chrome tab and reading the actual tab URL plus page state. A Chrome window title alone is not sufficient. If Codex Chrome browser-control is unavailable, wait 2 seconds and retry **the same Codex route once**. If it is still unavailable, stop and report the browser-connection problem; do not switch control backends, create an email, or write `run-status.json`.
+- Keep the same verified Codex Chrome browser-control session for the entire Outlook operation. If any tool reports that it cannot determine the current browser URL, or if the run falls back to Windows Computer Use, treat that as a control-path failure: stop immediately and do not attempt recipient entry, attachment, sending, or status writing through another backend.
 - Open Outlook using the user-provided Chrome bookmark when available, or navigate to `https://outlook.office.com` in the same Chrome profile. If the page shows a Microsoft sign-in screen, stop and ask the user to sign in in Chrome; do not switch browsers.
+- Outlook may redirect from `https://outlook.office.com` to `https://outlook.cloud.microsoft/mail/`. Accept this redirect only after the Codex tab state confirms that the page is Outlook and the account is signed in; both hosts are valid for this workflow.
 - Do **not** navigate to `chrome://extensions` or any other Chrome-internal settings page. Browser control may block internal URLs, and that block does not mean the **Allow access to file URLs** setting is disabled.
-- Verify file-URL access only through the complete attachment flow in Step 5e. The top-level **Attach file / 附加檔案** button opens an Outlook menu; it does not itself open a chooser. A timeout while waiting for a chooser after only clicking that button means the menu opened, not that file-URL access failed. The success signal is a general chooser opened after selecting **Browse this computer / 瀏覽此電腦** from that menu. If that chooser is blocked or the upload fails, stop immediately without sending or writing `run-status.json`. Tell the user to manually check **Extensions → Manage Extensions → (ChatGPT Chrome Extension *or* Claude in Chrome, whichever this run used) → Details → Allow access to file URLs**, then rerun the task. Do not retry by attaching an image-only input or by using a native file picker.
+- Verify file-URL access only through the complete attachment flow in Step 5e. The top-level **Attach file / 附加檔案** button opens an Outlook menu; it does not itself open a chooser. A timeout while waiting for a chooser after only clicking that button means the menu opened, not that file-URL access failed. The success signal is a general chooser opened after selecting **Browse this computer / 瀏覽此電腦** from that menu. If that chooser is blocked or the upload fails, stop immediately without sending or writing `run-status.json`. Tell the user to manually check **Extensions → Manage Extensions → ChatGPT Chrome Extension → Details → Allow access to file URLs**, then rerun the task. Do not retry by attaching an image-only input or by using a native file picker.
 
 ### 5a. Open Outlook Web
 
-Use the Chrome browser-control workflow from Step 5.0 to open **https://outlook.office.com** (or reuse the matching Chrome tab). Take a screenshot to confirm it loaded and is already signed in before composing.
+Use the verified Codex Chrome browser-control session from Step 5.0 to open **https://outlook.office.com** (or reuse the matching Chrome tab). Confirm the actual tab URL and page state, then take a screenshot to confirm Outlook loaded and is already signed in before composing.
 
 ### 5b. Open a new compose window
 
