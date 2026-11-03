@@ -308,17 +308,18 @@ The automation request to send the daily report is the project-level authorizati
 - Open Outlook using the user-provided Chrome bookmark when available, or navigate to `https://outlook.office.com` in the same Chrome profile. If the page shows a Microsoft sign-in screen, stop and ask the user to sign in in Chrome; do not switch browsers.
 - Outlook may redirect from `https://outlook.office.com` to `https://outlook.cloud.microsoft/mail/`. Accept this redirect only after the Codex tab state confirms that the page is Outlook and the account is signed in; both hosts are valid for this workflow.
 - Do **not** navigate to `chrome://extensions` or any other Chrome-internal settings page. Browser control may block internal URLs, and that block does not mean the **Allow access to file URLs** setting is disabled.
-- Verify file-URL access only through the complete attachment flow in Step 5e. The top-level **Attach file / 附加檔案** button opens an Outlook menu; it does not itself open a chooser. A timeout while waiting for a chooser after only clicking that button means the menu opened, not that file-URL access failed. The success signal is a general chooser opened after selecting **Browse this computer / 瀏覽此電腦** from that menu. Do not infer that the chooser is absent merely because the browser-control state does not list a native window: the Windows **Open** dialog can be visible to the user while remaining outside the controllable browser/app inventory. If the chooser is visibly open but the permitted Codex route cannot control it, preserve the draft and stop with **chooser visible but bridge not controllable**; do not switch control backends, use an image-only input, or write `run-status.json`. Only when there is no visual or explicit chooser evidence should this be classified as a chooser/bridge failure. In that case, tell the user to manually check **Extensions → Manage Extensions → ChatGPT Chrome Extension → Details → Allow access to file URLs**, then rerun the task.
+- Verify attachment support through the complete chooser-event and upload flow in Step 5e. The top-level **Attach file / 附加檔案** button opens an Outlook menu; **Browse this computer / 瀏覽此電腦** triggers the chooser. Browser automation may intercept that chooser without displaying a native Windows **Open** dialog. Neither a web-page screenshot nor an app/window inventory can establish that no chooser opened. A working Chrome connection does not establish that upload works either. Use the documented `filechooser` event and `chooser.setFiles()` before diagnosing an upload failure; do not ask the user to recheck an already-confirmed flag merely because a native dialog is absent.
 
 ### 5.0a Attachment chooser stability and diagnosis
 
 Treat the Outlook attachment handoff as a dynamic UI boundary. Re-read the current Outlook tab state immediately before each attachment-menu action; never reuse a numeric accessibility index or DOM node after another state snapshot, wait, or menu redraw.
 
-- Open **Attach file / 附加檔案**, then wait for the visible **Browse this computer / 瀏覽此電腦** menu item. Arm the file-chooser wait immediately before clicking that menu item, not after it.
+- Read the current browser API documentation, including the packaged `file-uploads` guidance (and `chrome-file-upload-troubleshooting` on an actual upload error). The concise CUA `Tab` interface is not the entire browser API: the same Chrome extension session also exposes `agent.browsers`, `tab.playwright.waitForEvent("filechooser")`, and `chooser.setFiles()`. Do not declare these unavailable after reading only the concise interface.
+- Open **Attach file / 附加檔案**, then wait for the visible **Browse this computer / 瀏覽此電腦** menu item. Arm the file-chooser wait immediately before clicking that menu item, not after it. Await the event and call `chooser.setFiles()` with the verified absolute PDF path; clicking Browse and then inspecting windows is not an upload attempt.
 - If the click reports `Node is detached from document`, classify it as an Outlook SPA menu redraw. Re-read the full tab state, reopen the attachment menu, reacquire the fresh Browse node, and retry this menu-to-chooser sequence exactly once.
-- If a fresh Browse click closes the menu, do not treat `apps: []` or the absence of a native window in browser-control state as proof that no chooser opened. First use any explicit chooser event or user-visible screenshot evidence. If a general Windows **Open** dialog is visible but the permitted Codex route cannot control it, classify this as **chooser visible but bridge not controllable**, preserve the draft, and stop before send or `run-status.json`; the user may select the verified current PDF manually, after which the browser route can resume and verify the attachment chip. If there is no visual or explicit chooser evidence and no attachment chip, classify it as a Codex Chrome/native file-chooser bridge failure. Do not repeatedly click, use a hidden input, select a suggested older PDF, or switch to another control backend.
+- If Browse closes the menu, await the already-armed chooser promise. If no listener was armed, record **chooser event not observed because the listener was omitted**; this is an incomplete procedure, not evidence of a Chrome bridge failure or disabled flag. If a properly armed listener times out after a verified fresh Browse click, record **filechooser event timed out** with the actual error; the cause remains unconfirmed. If `setFiles()` fails, record that upload error and follow the packaged Chrome troubleshooting guidance. Do not repeatedly click, use a hidden input, select a suggested older PDF, or switch to another control backend. Request manual file selection only after the documented chooser flow actually fails or a native chooser is visibly outside the permitted control surface.
 - On a later retry after Chrome is restarted, re-enumerate Chrome tabs, verify the actual Outlook URL and signed-in page state, and use that same verified Chrome session for the entire compose and attachment flow. A browser reconnect does not prove that the file chooser bridge is healthy; the chooser and attachment chip remain the required evidence.
-- A successful run requires all three observable signals in order: Browse opens the general chooser, the current `nightly-report.pdf` appears as an attachment chip, and the compose pane closes after Send. Only then may Step 6 write `run-status.json`.
+- A successful run requires all three observable signals in order: the Browse action produces a general `filechooser` event and its PDF upload succeeds, the current `nightly-report.pdf` appears as an attachment chip, and the compose pane closes after Send. A visible native dialog is not required. Only then may Step 6 write `run-status.json`. When the user requests attachment verification without sending, stop after verifying the chip, preserve the draft for handoff, and leave `run-status.json` unchanged.
 
 ### 5a. Open Outlook Web
 
@@ -349,15 +350,36 @@ Full report attached as PDF.
 
 ### 5e. Attach the PDF
 
-Confirm `PDF_FILE` exists and has a non-zero size. Follow Step 5.0a: reacquire the current attachment menu and Browse node, start the file-chooser wait immediately before clicking Browse, and use the one permitted redraw retry if the node is detached. Only the Browse click opens the native chooser. Select the local PDF path from that chooser when the permitted route can control it. If the Windows chooser is visibly open but outside the permitted control surface, preserve the draft and report **chooser visible but bridge not controllable**; do not switch backends or guess among file inputs. After a user-assisted selection, resume here and verify the current PDF attachment chip. This lets Outlook choose its active compose control and avoids stale or duplicate file inputs.
+Confirm `PDF_FILE` exists and has a non-zero size. Follow Step 5.0a and use the supported browser API on the **same verified Chrome extension backend and Outlook tab**. For a CUA tab handle named `tab` and its verified extension browser ID `chromeId`, obtain the richer handle through the documented API; this does not switch to Windows desktop control or another backend:
+
+```javascript
+// Read these packaged instructions before the upload attempt.
+nodeRepl.write(await agent.documentation.get("file-uploads"));
+const uploadBrowser = await agent.browsers.get(chromeId);
+await uploadBrowser.nameSession("📎 PR report attachment");
+const uploadTab = await uploadBrowser.tabs.get(tab.id);
+// Open Attach file using fresh page state, then inspect the visible Browse item.
+nodeRepl.write(await uploadTab.playwright.domSnapshot());
+// Run this sequence while the verified Browse menu item is visible.
+const [chooser] = await Promise.all([
+  uploadTab.playwright.waitForEvent("filechooser", { timeoutMs: 10000 }),
+  uploadTab.playwright.getByText("瀏覽此電腦", { exact: true }).click()
+]);
+await chooser.setFiles([String.raw`{{PDF_PATH_WINDOWS}}`]);
+```
+
+In JavaScript, use `String.raw` as above, a forward-slash absolute path, or a correctly escaped Windows string; do not paste an unescaped Windows path into an ordinary quoted string. Substitute the observed English label `Browse this computer` if that is the actual UI language. The chooser wait must be armed before the click, and the promise must be consumed even if the click fails; `Promise.all` above handles both rejections. If a node redraw breaks the click, refresh the menu and use the single Step 5.0a retry with a newly armed listener.
 
 Outlook Web has **multiple file inputs** — one is image-only (`accept="image/*"`), while general attachment inputs have an empty or missing `accept` attribute. Inspect them before any fallback attempt:
 
 ```javascript
-Array.from(document.querySelectorAll('input[type="file"]')).map((el, i) => ({ index: i, accept: el.accept }))
+nodeRepl.write(await uploadTab.playwright.evaluate(() =>
+  Array.from(document.querySelectorAll('input[type="file"]'))
+    .map((el, i) => ({ index: i, accept: el.accept }))
+));
 ```
 
-Never upload through the `accept="image/*"` input. Do not treat a chooser timeout after the top-level **Attach file / 附加檔案** click as an error: inspect the opened menu and choose **Browse this computer / 瀏覽此電腦**. If the fresh Browse action produces a detached-node error, use the single Step 5.0a redraw retry. If visual/explicit evidence shows the chooser is open but the permitted route cannot control it, preserve the draft and stop with **chooser visible but bridge not controllable**. If there is no chooser evidence, or the upload reports an error, preserve the draft and stop with the observed failure classification; do not guess among duplicate inputs or use another control backend.
+Never upload through the `accept="image/*"` input. Do not treat a chooser timeout after the top-level **Attach file / 附加檔案** click as an error: inspect the opened menu and choose **Browse this computer / 瀏覽此電腦** with the listener already armed. Use `chooser.setFiles()` from that event rather than guessing among duplicate inputs. On failure, preserve the draft and report the precise stage that failed (click, event wait, or file upload), following Step 5.0a. Do not infer a disabled flag from a missing native dialog, and do not use another control backend.
 
 Upload `{{PDF_PATH_WINDOWS}}`, then wait for the attachment chip to show its filename.
 
