@@ -1,356 +1,54 @@
 # Nightly PR Report
 
-週二至週六早上自動從 `data/test-mapping` branch 收集前一天的 PR 資料，透過 Cowork + Claude in Chrome 產生 PDF 報告並寄送到 Outlook（涵蓋週一至週五的 PR 活動；週日、週一不執行）。
+產生前一天的 PR 報告、作者審查摘要、PDF 與郵件 manifest。本專案擁有收件者、原有郵件標題、本文及附件；Chrome Outlook 寄送集中維護於 `C:/Users/stolas_in/Desktop/Report-Delivery` 與全域 `report-delivery` skill。
 
-這個 repo 現在採用「**可提交的模板 repo** + **本機產生的設定檔**」模式：
+## 正式時程（Asia/Taipei）
 
-- 版本控制中的 [`SKILL.md`](C:/Users/stolas_in/Desktop/Nightly-PR-Report/SKILL.md) 是模板，不應寫入個人信箱或機器路徑。
-- 首次設定時，`scripts\setup_nightly_report.py` 會在本機產生 `SKILL.local.md`。
-- `SKILL.local.md` 是給 Cowork / Agent 實際使用的本機檔案，不應提交。
+| 工作 | 時間 | 負責者 |
+| --- | --- | --- |
+| 抓前一天資料 | 週二至週六 07:30 | 既有 Windows NightlyPR-Fetch |
+| 產報告＋寄送 | 週二至週六 09:00 | Codex Nightly PR report |
+| 清理過期 pr-runs | 週二至週六 09:00 | 既有 Windows NightlyPR-Cleanup |
 
-> 如果只是想產生「這一次」的報告、不想在自己電腦上留下 git remote / 排程 / `SKILL.local.md` 等持久化設定，請改看 [`ONE_OFF_REPORT.md`](ONE_OFF_REPORT.md)，不要照下面的首次設定流程走。
+WER 是另一個專案，每天 08:00 觸發。寄信共用 mailbox 鎖，即使執行時間重疊也不並行操作 Outlook。
 
----
+## 執行分工
 
-## 流程概觀
+1. 排程固定台灣時間昨天為 DATE，讀取 `SKILL.md`，刷新並使用 `SKILL.local.md`。
+2. `python scripts/prepare_delivery.py preflight --date DATE` 驗證資料日期、完整性；缺 fetch／舊資料就停止，不寄舊報告。
+3. 依 skill 執行 HTML 骨架、作者摘要與 `validate_author_notes.py`。審查摘要內容規則維持原本要求。
+4. `python scripts/prepare_delivery.py prepare --date DATE` 透過本機獨立 profile renderer 產生有日期 PDF 與 manifest。零 PR 產生原本一行通知，明確無附件。
+5. 排程執行 `python scripts/prepare_delivery.py submit --date DATE`，再呼叫共用寄送 skill 操作已登入的 Chrome Outlook。
+6. 只有 shared sent receipt 確認後，`python scripts/prepare_delivery.py sync --date DATE` 才更新相容的 `run-status.json`。延遲寄送依快照統計同步，不讀隔天覆寫資料。
 
-以下時間均只在**週二至週六**執行（週日、週一不執行，因為報告涵蓋的是週一至週五的 PR 活動）：
+共用模組處理附件快照、跨程序鎖、佇列、防重寄、中斷恢復、寄件備份查證與故障診斷。Luna 6 xhigh 在有界嘗試後仍無法解決寄送問題，委派 gpt-6.1-sol 分析並嘗試恢復；報告內容或 fetch 失敗仍停止。不明寄送結果只查證，不重寄。已寄過日期跳過。
 
-```text
-07:30  Windows Task Scheduler
-       -> scripts\run_fetch.bat
-          -> scripts\get_nightly_report_data.py
-             -> git fetch data/test-mapping
-             -> 輸出 nightly-report-data.json
+## 郵件內容與輸出
 
-08:00  Codex Scheduled Task
-       -> 讀取 SKILL.local.md
-       -> 產生 nightly-report.html
-       -> 產生 nightly-report.pdf
-       -> 開 Outlook Web 寄出報告
-       -> 寫入 run-status.json
+- 收件者：本機 `recipients.json` 的 recipients 陣列；不寫死人數。WER 讀取後加 Elvis，但不改此檔案。
+- 原主旨：`PR Daily Report — DATE (N PRs, F failed)`；原本文為 pass/fail/skipped 摘要與 PDF 附件提示。
+- 原始資料：`nightly-report-data.json`；報告 HTML：`nightly-report.html`；摘要：`author-summary.html`。
+- PDF：`output/DATE/PR-Daily-Report-DATE.pdf`。
+- manifest：`output/DATE/delivery-manifest.json`。
+- receipt：`output/DATE/delivery-receipt.json`；最新相容狀態：`run-status.json`。
+- 寄送權威紀錄與實際寄送附件快照：`Report-Delivery/state/`。
 
-09:00  Windows Task Scheduler
-       -> scripts\run_cleanup.bat
-          -> scripts\remove_nightly_report_data.py
-             -> 清掉 data branch 上超過保留天數（預設 7 天）的 pr-runs/
-```
+測試信只可寄 `Stolas_In@cyberlink.com`，使用共用模組的 `make_test.py` 建立獨立測試 manifest，不改正式收件人。
 
----
+## 本機環境與設定
 
-## Repo 結構
+需要 Python 3.11+、Node、Chrome、可用的 playwright-core、Git／gh 及目前已授權的來源 repo。PDF renderer 優先使用 PLAYWRIGHT_MODULE，其次一般 Node 套件與本機 issue tracker skill 已安裝的 playwright-core。不依賴 WeasyPrint／GTK；不控制使用者 Chrome profile 來列印 PDF。
 
-```text
-Nightly-PR-Report/
-├── README.md
-├── SKILL.md                    # 可提交的模板
-├── SKILL.local.md              # setup 產生，本機使用，不提交
-├── .gitignore
-└── scripts/
-    ├── setup_nightly_report.py
-    ├── register_tasks.ps1
-    ├── run_fetch.bat
-    ├── run_cleanup.bat
-    ├── get_nightly_report_data.py
-    ├── new_pr_report_html.py
-    └── remove_nightly_report_data.py
-```
+既有新機設定工具：`scripts/setup_nightly_report.py`、`scripts/configure_nightly_report_local.ps1`、`scripts/register_tasks.ps1`。變更 git remote／憑證／Windows 工作前，先讀各工具的參數說明，保留原 fetch／cleanup 分工。不要在聊天或報告中輸出 token。Codex 排程由 app automation 工具維護，不手寫修改 automation.toml。
 
-執行產物會寫在 repo 根目錄，但都已列入 `.gitignore`：
+共用模組需安裝在兄弟目錄 Report-Delivery；sender_account 由其 config.local.json 設定，寄送時必須核對實際 Outlook 帳號。全域 skill 是模組內 skill/report-delivery 的 directory junction，只有一份維護來源。
 
-- `fetch.log`
-- `cleanup.log`
-- `nightly-report-data.json`
-- `nightly-report.html`
-- `nightly-report.pdf`
-- `run-status.json`
+`SKILL.local.md` 由 `python scripts/refresh_local_skill.py --repo-dir .` 產生，不直接修改。可提交模板與本機設定分離；recipients、輸出、狀態與憑證不提交。
 
----
+## 驗證與故障排除
 
-## 環境需求
+`python -m unittest discover -s scripts/tests -v`
 
-- Python 3.9+
-- Git for Windows
-- Cowork
-- Claude in Chrome
-- 已登入 `outlook.office.com`
-- 對 `CyberLink-Team/promeo-pc-promeo` 具備 fetch 權限
+報告錯誤：核對 fetch 日期、資料內容與 Author Notes 驗證；PDF 錯誤查本機 renderer。寄送錯誤：依共用 skill 的 connection／chooser／upload／Sent Items 診斷與 Sol 升級流程，不各自維護一套 Outlook 步驟。登入、實際工具審核或安全拒絕無法靠提示詞消除，必須回報具體阻擋。
 
----
-
-## 模板與本機設定
-
-`SKILL.md` 內保留 placeholders，例如：
-
-- `{{REPORT_EMAIL}}`
-- `{{NR_DIR_WINDOWS}}`
-- `{{SCRIPT_SOURCE_WINDOWS}}`
-- `{{PDF_PATH_WINDOWS}}`
-
-這些值不直接寫回模板。`setup_nightly_report.py` 會根據你目前這台機器的實際路徑與指定的收件信箱，渲染成 `SKILL.local.md`。
-
-這樣做的目的：
-
-- 可以安心把 repo commit 到自己的 repo 上。
-- 不會把真實收件信箱寫回模板。
-- 不會把你的 Windows 使用者名稱或本機路徑硬編進版本控制。
-
----
-
-## 首次設定
-
-### Step 1 - 複製 repo
-
-把整個 `Nightly-PR-Report` 資料夾放到新電腦上，例如：
-
-```powershell
-cd C:\path\to\Nightly-PR-Report
-```
-
-### Step 2 - 執行 setup
-
-```powershell
-python scripts\setup_nightly_report.py
-```
-
-這個腳本會做幾件事：
-
-- 初始化 / 更新此 repo 的 git remote
-- fetch `data/test-mapping`
-- 設定此 repo 專用的 `git user.name` / `git user.email`
-- 產生 `SKILL.local.md`
-
-可用參數：
-
-- `--git-name`
-- `--git-email`
-- `--report-email`
-- `--token`
-- `--remote-url`
-
-範例：
-
-```powershell
-python scripts\setup_nightly_report.py `
-  --git-name "Your Name" `
-  --git-email "you@example.com" `
-  --report-email "report@example.com"
-```
-
-如果你要使用 PAT 避免互動式憑證視窗：
-
-```powershell
-python scripts\setup_nightly_report.py --token <GITHUB_PAT>
-```
-
-### Step 2 認證建議
-
-避免直接使用 GitHub 互動式登入視窗，因為 Windows Credential Manager 可能會覆蓋其他 repo 共用的 `github.com` 憑證。
-
-建議二選一：
-
-1. `--token <GITHUB_PAT>`
-2. 專用 SSH key + `github-nightly-report` host alias
-
-SSH 方式範例：
-
-```powershell
-ssh-keygen -t ed25519 -f ~/.ssh/nightly_pr_report_ed25519 -N "" -C "nightly-pr-report@<hostname>"
-type $HOME\.ssh\nightly_pr_report_ed25519.pub
-```
-
-把公鑰加到 GitHub 後，在 `~/.ssh/config` 中加入：
-
-```sshconfig
-Host github-nightly-report
-    HostName github.com
-    User git
-    IdentityFile ~/.ssh/nightly_pr_report_ed25519
-    IdentitiesOnly yes
-```
-
-然後把 remote 改成：
-
-```powershell
-git remote set-url origin git@github-nightly-report:CyberLink-Team/promeo-pc-promeo.git
-git fetch origin data/test-mapping
-```
-
-### Step 3 - 註冊 Windows Task Scheduler
-
-請用系統管理員 PowerShell（預設會註冊為週二至週六執行，時間為 fetch 07:30 / cleanup 09:00）：
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts\register_tasks.ps1
-```
-
-若要自訂時間：
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts\register_tasks.ps1 -FetchTime "08:30" -CleanupTime "11:00"
-```
-
-> 若是更新既有機器上的排程（例如把時間或保留天數從舊版改過來），重新執行一次 `register_tasks.ps1` 即可覆蓋既有的 `NightlyPR-Fetch` / `NightlyPR-Cleanup` 工作定義。
-
-確認任務存在：
-
-```powershell
-Get-ScheduledTask -TaskName "NightlyPR-Fetch"
-Get-ScheduledTask -TaskName "NightlyPR-Cleanup"
-```
-
-### Step 4 - 在 Codex 開啟專案
-
-1. 開啟 Codex
-2. 連結 `Nightly-PR-Report` 資料夾
-3. 確認側欄能看到這個資料夾
-
-### Step 5 - 建立 Codex Scheduled Task
-
-請注意：**Codex 應使用 `SKILL.local.md`，不是 `SKILL.md`。**
-
-每次更新 repo 後，先在 repo 根目錄手動執行一次：
-
-```powershell
-python scripts\refresh_local_skill.py
-```
-
-這會以最新的 `SKILL.md` 重新產生本機 `SKILL.local.md`。之後 Codex 仍持續指向 `SKILL.local.md`；每次執行報告前，它也會自動重新整理一次，確保流程與已提交的模板同步。
-
-你可以在 Codex 建立週二至週六 08:00 的排程，內容讀取：
-
-```text
-C:\path\to\Nightly-PR-Report\SKILL.local.md
-```
-
-建議第一次先手動 `Run now`，讓 Codex / Chrome 把權限授權完。
-
----
-
-## 驗證方式
-
-### 手動測試 fetch
-
-```powershell
-cd C:\path\to\Nightly-PR-Report
-scripts\run_fetch.bat
-```
-
-成功後：
-
-- `fetch.log` 最後一行應為 `SUCCESS`
-- `nightly-report-data.json` 應存在
-
-### 手動測試 cleanup
-
-```powershell
-scripts\run_cleanup.bat
-```
-
-成功後：
-
-- `cleanup.log` 最後一行應為 `SUCCESS`
-
-### 確認 Cowork task
-
-執行完畢後應能看到：
-
-- `nightly-report.pdf`
-- `run-status.json`
-
----
-
-## 什麼可以 commit
-
-可以提交：
-
-- `README.md`
-- `SKILL.md`
-- `scripts/*.py`
-- `scripts/*.bat`
-- `scripts/*.ps1`
-- `.gitignore`
-
-不應提交：
-
-- `SKILL.local.md`
-- `fetch.log`
-- `cleanup.log`
-- `nightly-report-data.json`
-- `nightly-report.html`
-- `nightly-report.pdf`
-- `run-status.json`
-
-也不會被 commit 的本機設定：
-
-- `.git/config`
-- remote URL
-- `~/.ssh/config`
-- SSH private key
-
----
-
-## 把這個 repo 放到你自己的 repo 上，會不會有風險？
-
-### 1. 會不會把隱私上傳？
-
-在目前這個設計下，只要你不要手動把 `SKILL.local.md` 或輸出檔強制加入版本控制，正常情況下不會。
-
-真正有風險的原本是：
-
-- 真實收件信箱
-- 本機 Windows 使用者名稱
-- 本機 repo 絕對路徑
-
-現在這些都應該只出現在 `SKILL.local.md`，而不是 `SKILL.md`。
-
-### 2. 會不會影響後續 git fetch？
-
-不會因為你把這份專案 commit 到自己的 repo 就壞掉。
-
-後續 fetch / push 是否正常，取決於：
-
-- 這台機器的 `.git/config`
-- 你的 PAT 或 SSH 設定
-- `origin` 是否仍指向正確 repo
-
-也就是說：
-
-- 「把模板 repo commit 到你自己的 repo」本身沒問題
-- 「把本機專用設定跟憑證流程搞混」才會出問題
-
----
-
-## 常見問題
-
-### setup 成功了，但 Cowork 寄信還是失敗
-
-優先檢查：
-
-- Cowork 是否真的用 `SKILL.local.md`
-- Outlook Web 是否仍登入
-- Claude in Chrome 權限是否已授權
-- PDF 是否成功產生
-
-### fetch 失敗
-
-先手動試：
-
-```powershell
-git fetch origin data/test-mapping
-```
-
-如果出現登入視窗，不要直接登入，回頭改用：
-
-- PAT
-- 專用 SSH key
-
-### cleanup 失敗
-
-先手動試：
-
-```powershell
-python scripts\remove_nightly_report_data.py --keep-days 7
-```
-
-如果是權限或認證問題，通常也是 git remote / PAT / SSH 設定沒有對齊。
+單次報告參考 `ONE_OFF_REPORT.md`；不安裝新排程。採用共用寄送時仍需保留防重寄紀錄與附件快照，不宣稱寄信後完全不留下紀錄。

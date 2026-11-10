@@ -1,6 +1,6 @@
 # 共用報告寄送設計
 
-日期：2026-11-10（Asia/Taipei）。狀態：待使用者審閱；本文件不啟用新寄送流程。
+日期：2026-11-10（Asia/Taipei）。狀態：使用者已核准，依追加要求實作。
 
 ## 目的與已確認需求
 
@@ -78,7 +78,7 @@ Nightly 保留既有 `PR Daily Report — <DATE> (...)` 格式、本文與原收
 
 ## 排程與 PDF 調整
 
-保留 Nightly 的週二至週六 08:00 cron、WER 的每日 08:00 heartbeat 與既有模型／chat，僅替換工作組合與必要的授權／失敗處理描述。修改前用 automation 工具確認目前設定，透過工具更新，不直接修改 TOML。不建立重複排程，也不影響 PR fetch／cleanup Windows 工作。
+Nightly 改為週二至週六 09:00 cron、WER 保留每日 08:00 heartbeat 與既有模型／chat，僅替換工作組合與必要的授權／失敗處理描述。修改前用 automation 工具確認目前設定，透過工具更新，不直接修改 TOML。不建立重複排程，也不影響 PR fetch／cleanup Windows 工作。
 
 Nightly SKILL.md 與刷新來源移除 Outlook 操作與直接寫寄送成功的程式；WER RUNBOOK.md 不再引用 Nightly，daily_run.py 將寄送狀態交給共用模組，舊 CLI 可保留相容入口。兩者都明確在 report-ready 後交接 manifest。
 
@@ -94,3 +94,7 @@ PDF 製作仍屬報告端。Nightly 將目前臨場多路 fallback 收斂為可�
 - 更新前備份排程設定與既有文件，先驗證模組／兩專案，再切換排程。發現未解決的能力問題則保留舊排程，回報具體阻擋。
 
 實作完成回報檔案、測試結果、是否實際送信、下一次觸發時間，以及尚存的 Chrome／登入依賴。設計稿本身不變更排程、不寄信。
+
+## 核准後追加要求
+
+PR 09:00、WER 08:00（台灣時間）。Luna 6 xhigh 遇到無法解決的寄送問題時，委派 gpt-6.1-sol 分析後嘗試一次有根據的恢復；報告資料／fetch／內容驗證失敗仍停止。測試信只可寄 Stolas_In@cyberlink.com，不影響正式名單。

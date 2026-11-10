@@ -107,12 +107,12 @@ python <Nightly-PR-Report 路徑>\scripts\new_pr_report_html.py `
 
 ---
 
-## Step 4 — 產生 Author Notes（Haiku sub-agent）並驗證
+## Step 4 — 產生 Author Notes 並驗證
 
-做法與 [SKILL.md](SKILL.md) Step 3 完全相同（slim payload → Agent tool `model: "haiku"` → 驗證 → 塞回 placeholder），差別只在所有檔案路徑都指向 `$SCRATCH` 而不是 repo 根目錄：
+做法與 [SKILL.md](SKILL.md) Step 3 完全相同（slim payload → 依專案提示產生摘要 → 驗證 → 塞回 placeholder），差別只在所有檔案路徑都指向 `$SCRATCH` 而不是 repo 根目錄：
 
 - 產生的 slim JSON 一樣來自 `$SCRATCH\nightly-report-data.json`。
-- Haiku 回傳的 HTML 存成 `$SCRATCH\author-summary.html`。
+- 產生的 HTML 存成 `$SCRATCH\author-summary.html`。
 - 驗證：
   ```powershell
   python <Nightly-PR-Report 路徑>\scripts\validate_author_notes.py `
@@ -128,15 +128,10 @@ python <Nightly-PR-Report 路徑>\scripts\new_pr_report_html.py `
 ## Step 5 — 轉成 PDF
 
 ```powershell
-pip install weasyprint --quiet
-python -c "
-from weasyprint import HTML
-HTML(filename=r'$SCRATCH\nightly-report.html').write_pdf(r'$SCRATCH\nightly-report.pdf')
-print('PDF written')
-"
+node <Nightly-PR-Report 路徑>\scripts\render_report.cjs "$SCRATCH\nightly-report.html" "$SCRATCH\nightly-report.pdf"
 ```
 
-失敗時比照 [SKILL.md](SKILL.md) Step 4 用 chromium headless 當備援。
+使用與正式報告相同的獨立 profile renderer；失敗時停止，不使用舊 PDF。
 
 產生後跟使用者確認 PDF 內容（可以先讓使用者看過，不一定要馬上寄）。
 
@@ -150,27 +145,21 @@ print('PDF written')
 
 ### 選擇「要寄」
 
-比照 [SKILL.md](SKILL.md) Step 5 的 Outlook Web 流程，但用這次的暫存收件人清單，**不要**寫進 repo 根目錄的 `recipients.json`：
+將這次的暫存收件者、主旨、本文及 PDF 包裝成共用 delivery manifest，依 `C:/Users/stolas_in/.codex/skills/report-delivery/SKILL.md` 提交與寄送；不再引用本專案的 Outlook 步驟。不要修改正式 recipients.json，也不要執行正式報告的 sync。使用獨立 one-off report_id 與指定統計日，沿用同日期防重寄；寄送前確認當次使用者確實要求寄信。若本次是流程測試，收件者只能是 Stolas_In@cyberlink.com。
 
-```powershell
-@{ recipients = @("<這次要寄的信箱1>", "<信箱2>") } | ConvertTo-Json | Set-Content "$SCRATCH\recipients.json"
-```
-
-其餘步驟（開 Outlook Web、填 收件者/主旨/內文、附加 `$SCRATCH\nightly-report.pdf`、送出、確認 compose pane 關閉）與 [SKILL.md](SKILL.md) Step 5 相同，只是附件與收件人清單都改讀 `$SCRATCH` 底下的檔案。
-
-送出後**不要**寫 `run-status.json`（那是排程流程才需要的狀態檔，一次性任務不需要）。
+共用模組會保存防重寄紀錄與附件快照；這是寄信必要的持久化紀錄，不能聲稱完全不留痕跡。要求完全不留寄送紀錄的單次執行只能產報告、不寄信。
 
 ---
 
 ## Step 7 — 清理（一定要做）
 
-不論有沒有寄出，收尾時把整個暫存資料夾刪掉，確保這台機器上不留下任何痕跡：
+報告完成或共用寄送已取得獨立快照後，只清理本次確認過的暫存資料夾；不得刪除共用寄送紀錄／spool 或未知寄送結果所需證據。刪除前核對 SCRATCH 的絕對路徑確實是本次暫存目錄：
 
 ```powershell
 Remove-Item -Recurse -Force $SCRATCH
 ```
 
-跟使用者回報：本次是一次性執行，沒有在這台機器上新增 git remote、沒有註冊排程、沒有留下 `SKILL.local.md` / `recipients.json` / 報告檔案。
+跟使用者回報：本次是一次性執行，沒有在這台機器上新增 git remote、沒有註冊排程、沒有留下正式 `SKILL.local.md` / `recipients.json` 設定；若曾寄送，共用模組仍保留防重寄紀錄與附件快照。
 
 ---
 
