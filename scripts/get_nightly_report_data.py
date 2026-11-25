@@ -43,8 +43,48 @@ def parse_json(raw):
         return None
 
 
+def validate_rebuild_status(status, day):
+    """Friday reports require that Friday's full rebuild has published results.
+
+    This is publication readiness, not test success or coverage completeness.
+    Key the check to the report date so delayed/manual runs retain the same gate.
+    """
+    target = datetime.date.fromisoformat(day)
+    if target.weekday() != 4:
+        return
+    error = f"Friday full rebuild for {day} is not confirmed published"
+    if not isinstance(status, dict):
+        raise ValueError(f"{error}: missing or invalid rebuild-status.json")
+    run = status.get("run")
+    publish = status.get("publish")
+    if not isinstance(run, dict) or not isinstance(publish, dict):
+        raise ValueError(f"{error}: invalid run/publish metadata")
+    if status.get("operation") != "full" or run.get("taipei_date") != day:
+        raise ValueError(f"{error}: rebuild date or operation does not match")
+    if publish.get("state") != "published":
+        raise ValueError(f"{error}: publish.state={publish.get('state')!r}")
+    for key in ("workflow_run_id", "workflow_run_attempt"):
+        value = str(run.get(key, ""))
+        if not value.isascii() or not value.isdigit() or int(value) < 1:
+            raise ValueError(f"{error}: missing or invalid {key}")
+    try:
+        published_at = datetime.datetime.fromisoformat(
+            publish["published_at"].replace("Z", "+00:00")
+        )
+        if published_at.utcoffset() is None:
+            raise ValueError("timezone required")
+        taipei_date = published_at.astimezone(
+            datetime.timezone(datetime.timedelta(hours=8))
+        ).date()
+        if taipei_date < target:
+            raise ValueError("publication predates rebuild date")
+    except (KeyError, TypeError, AttributeError, ValueError) as exc:
+        raise ValueError(f"{error}: invalid publish.published_at") from exc
+
+
 def load_branch_artifacts(ref, git_root):
     paths = {
+        "rebuild_status": "rebuild-status.json",
         "codebase_coverage": "codebase-coverage.json",
         "full_coverage_summary": "full-coverage-summary.json",
         "dart_failed_tests": "dart-failed-tests.json",
@@ -91,12 +131,21 @@ def main():
 
     try:
         fetch_data_branch(data_branch, git_root)
-    except RuntimeError as error:
+        snapshot = git(["rev-parse", "--verify", "FETCH_HEAD^{commit}"], cwd=git_root)
+        if snapshot.returncode != 0 or not snapshot.stdout.strip():
+            raise RuntimeError("Unable to resolve fetched data branch commit")
+        ref = snapshot.stdout.strip()
+        artifacts = load_branch_artifacts(ref, git_root)
+        validate_rebuild_status(artifacts.get("rebuild_status"), date)
+    except (RuntimeError, ValueError) as error:
         print(f"ERROR: {error}", file=sys.stderr)
         sys.exit(1)
 
     # List all files under pr-runs/<date>/
     r = git(["ls-tree", "-r", "--name-only", ref], cwd=git_root)
+    if r.returncode != 0:
+        print("ERROR: Unable to list fetched PR data", file=sys.stderr)
+        sys.exit(1)
     all_files = [f for f in r.stdout.splitlines() if f.startswith(prefix)]
     shas = sorted({f[len(prefix):].split("/")[0] for f in all_files})
 
@@ -136,12 +185,11 @@ def main():
     # The default order is alphabetical by SHA, which is not meaningful.
     prs.sort(key=lambda p: (p.get("summary") or {}).get("generated_at") or "")
 
-    artifacts = load_branch_artifacts(ref, git_root)
-
     report = {
         "date":                   date,
         "generated_at":           datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
         "data_branch":            data_branch,
+        "data_commit":            ref,
         "pr_count":               len(prs),
         "prs":                    prs,
         **artifacts,

@@ -7,6 +7,7 @@ from pathlib import Path
 import subprocess
 import sys
 import uuid
+from get_nightly_report_data import validate_rebuild_status
 
 ROOT = Path(__file__).resolve().parents[1]
 SHARED = ROOT.parent / 'Report-Delivery'
@@ -22,6 +23,7 @@ def preflight(root, day):
         raise ValueError(f'Report data date {data.get("date")} differs from requested {day}; fetch incomplete or stale')
     if not isinstance(data.get('prs'), list) or data.get('pr_count') != len(data['prs']):
         raise ValueError('Invalid or incomplete PR data')
+    validate_rebuild_status(data.get('rebuild_status'), day)
     return data
 
 

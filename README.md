@@ -18,11 +18,22 @@
 
 | 工作 | 執行時間 | 負責排程 |
 | --- | --- | --- |
-| 擷取前一天的資料 | 週二至週六 07:30 | Windows `NightlyPR-Fetch` |
-| 產生報告並寄送 | 週二至週六 09:00 | Codex `Nightly PR report` |
-| 清理過期的 `pr-runs` | 週二至週六 09:00 | Windows `NightlyPR-Cleanup` |
+| 擷取前一天的資料 | 週二至週五 07:30；週六 19:30 | Windows `NightlyPR-Fetch`（兩組觸發時間） |
+| 產生報告並寄送 | 週二至週五 09:00 | Codex `Nightly PR report` |
+| 產生週五報告並寄送 | 週六 20:00 | Codex `Nightly PR report — Saturday` |
+| 清理過期的 `pr-runs` | 原設定週二至週六 09:00；本機目前停用 | Windows `NightlyPR-Cleanup`，本次不變更 |
 
 WER 由另一個專案每日 08:00 觸發。兩者共用寄送鎖，即使工作重疊，也不會同時操作 Outlook。以上是觸發時間，實際寄出時間取決於報告產生與寄送耗時。
+
+週五統計日的資料必須通過 `rebuild-status.json` 檢查：`operation=full`、`run.taipei_date` 等於該週五、`publish.state=published`，並有有效的 workflow run ID、attempt 與帶時區的發布時間。Fetch 將狀態與資料從同一個 commit 讀出，記錄 `data_commit`；報告 preflight 再次檢查。缺失、日期錯誤或未發布即停止，不寄信、不自動重試，也不以舊資料替代。測試失敗或 coverage 不完整仍是可報告的結果，不作為發布失敗判定。
+
+JSON 最外層的 `generated_at` 是 fetch 時間；`rebuild_status.publish.published_at` 才是 rebuild 發布時間。兩者不能互相替代。延遲重跑時明確指定原週五日期。
+
+只更新既有 Windows fetch 觸發時間、保留其餘設定與 cleanup：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/register_tasks.ps1 -FetchOnly
+```
 
 ## 環境與設定
 

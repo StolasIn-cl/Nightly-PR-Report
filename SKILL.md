@@ -1,6 +1,6 @@
 ---
 name: nightly-pr-report
-description: 產生前一天的 Nightly PR 報告、作者摘要、PDF 與專案自訂寄送 manifest；排程週二至週六 09:00，由共用 report-delivery skill 寄送。
+description: 產生前一天的 Nightly PR 報告、作者摘要、PDF 與專案自訂寄送 manifest；週二至週五 09:00、週六 20:00，由共用 report-delivery skill 寄送。
 ---
 
 # Nightly PR report producer
@@ -17,7 +17,11 @@ Run `python "{{NR_DIR_WINDOWS}}/scripts/refresh_local_skill.py" --repo-dir "{{NR
 
 Run `python "{{NR_DIR_WINDOWS}}/scripts/prepare_delivery.py" preflight --date DATE`.
 
-This validates nightly-report-data.json exists, the data.date exactly equals DATE and pr_count matches prs. Data is fetched by the separate Windows 07:30 fetch task. Missing/stale/incomplete fetch or report validation failure stops this report; never proceed anyway, generate old content, or invoke Sol just to force a send. Do not run PR cleanup.
+This validates nightly-report-data.json exists, the data.date exactly equals DATE and pr_count matches prs. Data is fetched by the separate Windows task at 07:30 Tuesday-Friday and 19:30 Saturday (Asia/Taipei).
+
+For a Friday DATE, preflight also requires the embedded rebuild_status from rebuild-status.json to identify that Friday's full rebuild with publish.state=published, valid workflow run ID/attempt and a timezone-aware publication timestamp. Fetch reads status and report artifacts from one pinned data_commit. Missing/invalid status, a different rebuild date, daily mode, or failed/unconfirmed publication stops this report before generation or delivery, including zero-PR notifications. Stop and report blocked; leave the job for manual recovery, with no automatic retry or fallback fetch. Preserve the original DATE across delayed retries. Published test failures and incomplete coverage remain reportable results; they are not publication failures.
+
+Missing/stale/incomplete fetch or report validation failure stops this report; never proceed anyway, generate old content, or invoke Sol just to force a send. Do not run PR cleanup.
 
 Check shared delivery list for this report/date: an existing sent job is skipped; an existing queued/unknown job is resumed through the shared skill, not regenerated or resubmitted with changed content.
 

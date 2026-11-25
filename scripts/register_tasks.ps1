@@ -8,7 +8,14 @@
     Sat = Fri's PRs).
 
 .PARAMETER FetchTime
-    Tuesday-Saturday run time for run_fetch.bat (default: 07:30).
+    Tuesday-Friday run time for run_fetch.bat (default: 07:30).
+
+.PARAMETER SaturdayFetchTime
+    Saturday run time for run_fetch.bat (default: 19:30).
+
+.PARAMETER FetchOnly
+    Update only the existing fetch task's triggers. Preserve its settings,
+    actions and principal, and leave cleanup untouched.
 
 .PARAMETER CleanupTime
     Tuesday-Saturday run time for run_cleanup.bat (default: 09:00).
@@ -27,7 +34,9 @@
 #>
 param(
     [string]$FetchTime   = "07:30",
-    [string]$CleanupTime = "09:00"
+    [string]$CleanupTime = "09:00",
+    [string]$SaturdayFetchTime = "19:30",
+    [switch]$FetchOnly
 )
 
 $RunDays = @("Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
@@ -38,6 +47,18 @@ $ErrorActionPreference = "Stop"
 $NRDir      = Split-Path -Parent $PSScriptRoot
 $FetchBat   = Join-Path $NRDir "scripts\run_fetch.bat"
 $CleanupBat = Join-Path $NRDir "scripts\run_cleanup.bat"
+
+$fetchTrigger = @(
+    New-ScheduledTaskTrigger -Weekly -DaysOfWeek @("Tuesday", "Wednesday", "Thursday", "Friday") -At $FetchTime
+    New-ScheduledTaskTrigger -Weekly -DaysOfWeek Saturday -At $SaturdayFetchTime
+)
+
+if ($FetchOnly) {
+    Get-ScheduledTask -TaskName "NightlyPR-Fetch" -ErrorAction Stop | Out-Null
+    Set-ScheduledTask -TaskName "NightlyPR-Fetch" -Trigger $fetchTrigger | Out-Null
+    Write-Host "[OK] Updated NightlyPR-Fetch @ $FetchTime (Tue-Fri), $SaturdayFetchTime (Sat); cleanup unchanged"
+    return
+}
 
 Write-Host ""
 Write-Host "Nightly-PR-Report: $NRDir"
@@ -63,18 +84,16 @@ $fetchAction  = New-ScheduledTaskAction `
     -Execute  "cmd.exe" `
     -Argument "/c `"$FetchBat`""
 
-$fetchTrigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek $RunDays -At $FetchTime
-
 Register-ScheduledTask `
     -TaskName    "NightlyPR-Fetch" `
-    -Description "Fetch PR data from data/test-mapping branch at $FetchTime, Tuesday-Saturday, for nightly report" `
+    -Description "Fetch PR data at $FetchTime Tue-Fri and $SaturdayFetchTime Sat; Friday full rebuild publication required" `
     -Action      $fetchAction `
     -Trigger     $fetchTrigger `
     -Settings    $settings `
     -RunLevel    Highest `
     -Force | Out-Null
 
-Write-Host "[OK] Registered NightlyPR-Fetch   @ $FetchTime (Tue-Sat)"
+Write-Host "[OK] Registered NightlyPR-Fetch   @ $FetchTime (Tue-Fri), $SaturdayFetchTime (Sat)"
 
 # ── NightlyPR-Cleanup ────────────────────────────────────────────────────────
 $cleanupAction  = New-ScheduledTaskAction `

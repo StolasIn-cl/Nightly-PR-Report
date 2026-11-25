@@ -8,6 +8,7 @@ import unittest
 SCRIPTS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
 import prepare_delivery as m
+from test_rebuild_status import published_status
 
 
 class PrepareDeliveryTests(unittest.TestCase):
@@ -24,6 +25,16 @@ class PrepareDeliveryTests(unittest.TestCase):
 
     def test_stale_data_stops(self):
         with self.assertRaises(ValueError): m.preflight(self.root, '2026-11-10')
+
+    def test_friday_preflight_requires_published_full_rebuild_even_with_zero_prs(self):
+        self.data.update(date='2026-11-06', pr_count=0, prs=[])
+        path = self.root / 'nightly-report-data.json'
+        path.write_text(json.dumps(self.data))
+        with self.assertRaisesRegex(ValueError, 'rebuild'):
+            m.preflight(self.root, '2026-11-06')
+        self.data['rebuild_status'] = published_status()
+        path.write_text(json.dumps(self.data))
+        self.assertEqual(m.preflight(self.root, '2026-11-06')['pr_count'], 0)
 
     def test_preserves_project_subject_body_recipients(self):
         result = m.build_manifest(self.root, '2026-11-09', self.pdf, 'stolas_in@cyberlink.com')
